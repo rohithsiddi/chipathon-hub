@@ -1,0 +1,130 @@
+site_name: Chipathon Knowledge Hub
+site_description: >-
+  Your central guide for IEEE SSCS Chipathon — environment setup, OpenROAD flow
+  fundamentals, debugging playbooks, and canonical answers from the community.
+site_url: https://rohithsiddi.github.io/chipathon-hub/
+repo_url: https://github.com/rohithsiddi/chipathon-hub
+repo_name: chipathon-hub
+edit_uri: edit/main/hub/docs/
+
+docs_dir: docs
+site_dir: site
+
+theme:
+  name: material
+  custom_dir: overrides
+  icon:
+    logo: material/memory
+  palette:
+    # Light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    # Dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.path
+    - navigation.top
+    - navigation.footer
+    - search.highlight
+    - search.suggest
+    - search.share
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+    - toc.integrate
+    - announce.dismiss
+
+plugins:
+  - search:
+      separator: '[\s\-,:!=\[\]()"/]+|(?!\b)(?=[A-Z][a-z])|\.(?!\d)|&[lg]t;'
+  - tags
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - attr_list
+  - md_in_html
+  - tables
+  - footnotes
+  - toc:
+      permalink: true
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/The-OpenROAD-Project
+  generator: false
+  tags:
+    OpenROAD: openroad
+    Timing: timing
+    DRC: drc
+    Routing: routing
+    Setup: setup
+
+extra_css:
+  - assets/custom.css
+
+extra_javascript:
+  - assets/chatbot.js
+
+nav:
+  - Welcome: 
+      - Home: index.md
+      - Code of Conduct: conduct.md
+  - Getting Started:
+      - "Track 1: Digital Flow": getting-started/digital.md
+      - "Track 2: Analog/Mixed-Signal": getting-started/ams.md
+      - Environment Setup: getting-started/env-setup.md
+  - Flow Fundamentals:
+      - RTL-to-GDS Pipeline: fundamentals/pipeline.md
+      - Understanding ORFS: fundamentals/orfs-intro.md
+  - Debugging Playbooks (Triage):
+      - Timing (WNS/TNS) Violations: debugging/timing.md
+      - Routing & Congestion: debugging/routing.md
+      - DRC Failures: debugging/drc.md
+      - Environment Issues: debugging/environment.md
+  - Artifact Map:
+      - Where are my logs?: artifacts/logs.md
+      - Understanding .def, .odb, GDS: artifacts/file-types.md
+      - Reading metrics.json: artifacts/metrics.md
+  - Submission Checklists:
+      - Final Checklist: submission/checklist.md
+  - FAQ & Canonical Answers:
+      - "Seen During Chipathon": faq/chipathon-history.md
+      - Config Snippet Library: faq/snippets.md
+  - For Mentors:
+      - Contributor Guide: maintainers/contributor-guide.md
+      - Tagging Canonical Issues: maintainers/tagging.md

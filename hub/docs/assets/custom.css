@@ -1,0 +1,274 @@
+/* ── Chipathon Hub — Custom CSS ── */
+
+/* Brand colors */
+:root {
+  --chipathon-blue: #0f3c6e;
+  --chipathon-dark: #0d1117;
+  --chipathon-card-bg: rgba(255, 255, 255, 0.05);
+
+  /* Force Material Theme to use OpenROAD Dark Blue */
+  --md-primary-fg-color: #0f3c6e;
+  --md-primary-fg-color--light: #165293;
+  --md-primary-fg-color--dark: #082442;
+  --md-accent-fg-color: #0f3c6e;
+  --md-accent-fg-color--transparent: rgba(15, 60, 110, 0.1);
+}
+
+/* Slate (Dark) Scheme overrides for legibility */
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: #63b3ed; /* Light blue for legible links in dark mode */
+  --md-primary-fg-color--light: #90cdf4;
+  --md-primary-fg-color--dark: #3182ce;
+  --md-accent-fg-color: #63b3ed;
+  --md-accent-fg-color--transparent: rgba(99, 179, 237, 0.1);
+}
+
+/* Always force the top navigation header to OpenROAD Dark Navy */
+.md-header, .md-tabs {
+  background-color: #0f3c6e !important;
+}
+
+/* Hero banner on home page */
+.chipathon-hero {
+  background: linear-gradient(135deg, #1e5691 0%, #164273 100%);
+  padding: 1.5rem 1.5rem;
+  border-radius: 8px;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.chipathon-hero h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 0.5rem;
+}
+
+.chipathon-hero p {
+  font-size: 1.1rem;
+  opacity: 0.85;
+}
+
+/* Feature cards grid */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.2rem;
+  margin: 1.5rem 0;
+}
+
+.card {
+  background: var(--md-code-bg-color);
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 10px;
+  padding: 1.4rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(99, 179, 237, 0.15);
+  border-color: #63b3ed;
+  text-decoration: none;
+  color: inherit;
+}
+
+.card .card-icon {
+  font-size: 2rem;
+  margin-bottom: 0.6rem;
+}
+
+.card h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 0.4rem 0;
+}
+
+.card p {
+  font-size: 0.85rem;
+  opacity: 0.75;
+  margin: 0;
+}
+
+/* Chatbot badge */
+.chatbot-badge {
+  display: inline-block;
+  background: linear-gradient(90deg, #165293, #0f3c6e);
+  color: white;
+  padding: 0.3rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  margin-bottom: 1rem;
+}
+
+/* Code copy button enhancement */
+.md-clipboard {
+  transition: color 0.2s ease;
+}
+
+/* Floating Chatbot Widget */
+#chat-widget-button {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--md-primary-fg-color);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  cursor: pointer;
+  z-index: 1000;
+  transition: transform 0.2s ease;
+}
+#chat-widget-button:hover {
+  transform: scale(1.05);
+}
+
+#chat-widget-container {
+  display: none;
+  position: fixed;
+  bottom: 6.5rem;
+  right: 2rem;
+  width: 380px;
+  height: 600px;
+  max-height: 80vh;
+  background: var(--md-default-bg-color);
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  z-index: 1000;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#chat-widget-container.open {
+  display: flex;
+}
+
+.chat-widget-header {
+  background: var(--md-primary-fg-color);
+  color: white;
+  padding: 1rem;
+  font-size: 1.15rem;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#chat-widget-close {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  line-height: 1;
+}
+
+/* Chat History elements inside Widget */
+#chat-widget-history {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.chat-widget-input-area {
+  display: flex;
+  padding: 0.8rem;
+  border-top: 1px solid var(--md-default-fg-color--lightest);
+  gap: 0.6rem;
+  background: var(--md-default-bg-color--lightest);
+}
+
+#chat-widget-input {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 8px;
+  background: var(--md-default-bg-color);
+  color: var(--md-default-fg-color);
+  font-size: 0.85rem;
+}
+
+#chat-widget-input:focus {
+  outline: none;
+  border-color: var(--md-primary-fg-color);
+  box-shadow: 0 0 0 2px rgba(var(--md-primary-fg-color--rgb), 0.2);
+}
+
+#chat-widget-send {
+  padding: 0 1rem;
+  background: var(--md-primary-fg-color);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+#chat-widget-send:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+#chat-widget-send:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.message {
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  max-width: 85%;
+  line-height: 1.5;
+  font-size: 0.85rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+.user-message {
+  align-self: flex-end;
+  background: var(--md-primary-fg-color);
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+.user-message a, .user-message code { color: white; }
+.bot-message {
+  align-self: flex-start;
+  background: var(--md-code-bg-color);
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-bottom-left-radius: 4px;
+}
+
+.loading {
+  font-style: italic;
+  opacity: 0.7;
+}
+
+.citation {
+  font-size: 0.8rem;
+  opacity: 0.85;
+  margin-top: 0.6rem;
+  border-top: 1px solid rgba(255,255,255,0.15);
+  padding-top: 0.5rem;
+}
+
+.citation-item {
+  color: var(--md-primary-fg-color);
+  font-weight: 500;
+}

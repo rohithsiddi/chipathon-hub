@@ -1,0 +1,215 @@
+[
+  {
+    "id": "q001",
+    "question": "How do I fix setup timing violations in OpenROAD?",
+    "expected_topics": ["timing", "setup", "WNS", "clock period", "GPL_ROUTABILITY_DRIVEN"],
+    "expected_doc_types": ["rtd", "github_issue", "github_markdown"],
+    "should_answer": true
+  },
+  {
+    "id": "q002",
+    "question": "Where is the final GDS file after the ORFS flow completes?",
+    "expected_topics": ["6_final.gds", "results", "flow/results"],
+    "expected_doc_types": ["github_markdown", "rtd"],
+    "should_answer": true
+  },
+  {
+    "id": "q003",
+    "question": "What does CORE_UTILIZATION control in OpenROAD flow scripts?",
+    "expected_topics": ["utilization", "standard cells", "core area", "config.mk"],
+    "expected_doc_types": ["github_markdown", "rtd"],
+    "should_answer": true
+  },
+  {
+    "id": "q004",
+    "question": "How do I install OpenROAD using Docker?",
+    "expected_topics": ["docker", "pull", "container", "openroad/flow"],
+    "expected_doc_types": ["rtd", "github_markdown"],
+    "should_answer": true
+  },
+  {
+    "id": "q005",
+    "question": "How do I re-run only the detailed routing stage without rerunning the full flow?",
+    "expected_topics": ["make clean_drt", "5_route", "make target", "stage"],
+    "expected_doc_types": ["github_markdown", "rtd"],
+    "should_answer": true
+  },
+  {
+    "id": "q006",
+    "question": "What is WNS and TNS in timing reports?",
+    "expected_topics": ["worst negative slack", "total negative slack", "timing violation"],
+    "expected_doc_types": ["rtd", "github_issue"],
+    "should_answer": true
+  },
+  {
+    "id": "q007",
+    "question": "How do I fix DRC violations related to antenna rules?",
+    "expected_topics": ["antenna", "ANTENNA_REPAIR", "diode", "long metal routes"],
+    "expected_doc_types": ["rtd", "github_issue"],
+    "should_answer": true
+  },
+  {
+    "id": "q008",
+    "question": "Where are the log files stored during the OpenROAD flow?",
+    "expected_topics": ["flow/logs", "stage log", ".log"],
+    "expected_doc_types": ["github_markdown", "rtd"],
+    "should_answer": true
+  },
+  {
+    "id": "q009",
+    "question": "How do I change the clock period for my design?",
+    "expected_topics": ["CLOCK_PERIOD", "config.mk", "nanoseconds"],
+    "expected_doc_types": ["github_markdown", "rtd"],
+    "should_answer": true
+  },
+  {
+    "id": "q010",
+    "question": "What files do I need to submit for the Chipathon?",
+    "expected_topics": ["6_final.gds", "DEF", "metrics.json", "DRC report", "timing report"],
+    "expected_doc_types": ["github_markdown"],
+    "should_answer": true
+  },
+  {
+    "id": "q011",
+    "question": "How do I handle routing congestion in OpenROAD?",
+    "expected_topics": ["congestion", "ROUTING_TARGET_DENSITY", "utilization", "global route"],
+    "expected_doc_types": ["rtd", "github_issue"],
+    "should_answer": true
+  },
+  {
+    "id": "q012",
+    "question": "What PDKs are supported by OpenROAD-flow-scripts?",
+    "expected_topics": ["nangate45", "sky130", "asap7", "PDK"],
+    "expected_doc_types": ["github_markdown", "rtd"],
+    "should_answer": true
+  },
+  {
+    "id": "q013",
+    "question": "How do I view DRC violations in KLayout?",
+    "expected_topics": ["klayout", "GDS", "DRC", "lydrc"],
+    "expected_doc_types": ["rtd", "github_issue"],
+    "should_answer": true
+  },
+  {
+    "id": "q014",
+    "question": "What is the metrics.json file and what does it contain?",
+    "expected_topics": ["metrics.json", "WNS", "DRC errors", "area", "power", "QoR"],
+    "expected_doc_types": ["github_markdown", "rtd"],
+    "should_answer": true
+  },
+  {
+    "id": "q015",
+    "question": "How do I run just the synthesis stage in ORFS?",
+    "expected_topics": ["1_synth", "make target", "yosys"],
+    "expected_doc_types": ["github_markdown"],
+    "should_answer": true
+  },
+  {
+    "id": "q016",
+    "question": "Why does the flow hang or consume too much memory?",
+    "expected_topics": ["RAM", "OOM", "-j", "parallelism", "make -j2"],
+    "expected_doc_types": ["github_issue", "rtd"],
+    "should_answer": true
+  },
+  {
+    "id": "q017",
+    "question": "How do I enable post-route optimization in OpenROAD?",
+    "expected_topics": ["DPO_MAX_DISPLACEMENT", "post-route", "optimization"],
+    "expected_doc_types": ["github_markdown", "rtd"],
+    "should_answer": true
+  },
+  {
+    "id": "q018",
+    "question": "What is the difference between global routing and detailed routing?",
+    "expected_topics": ["global routing", "GRT", "detailed routing", "DRT"],
+    "expected_doc_types": ["rtd", "github_markdown"],
+    "should_answer": true
+  },
+  {
+    "id": "q019",
+    "question": "How do I fix Apple Silicon (M1/M2) Docker issues with OpenROAD?",
+    "expected_topics": ["apple silicon", "arm", "platform linux/amd64", "emulation"],
+    "expected_doc_types": ["github_issue", "rtd"],
+    "should_answer": true
+  },
+  {
+    "id": "q020",
+    "question": "What does the floorplan stage produce and where is the output?",
+    "expected_topics": ["floorplan", "2_floorplan.def", "die area", "core area"],
+    "expected_doc_types": ["rtd", "github_markdown"],
+    "should_answer": true
+  },
+  {
+    "id": "q021",
+    "question": "How do I interpret the power report from OpenROAD?",
+    "expected_topics": ["power", "6_power.rpt", "dynamic", "leakage"],
+    "expected_doc_types": ["rtd", "github_markdown"],
+    "should_answer": true
+  },
+  {
+    "id": "q022",
+    "question": "How do I add false paths to fix multi-clock domain violations?",
+    "expected_topics": ["false path", "set_false_path", "clock domain", "SDC"],
+    "expected_doc_types": ["rtd", "github_issue"],
+    "should_answer": true
+  },
+  {
+    "id": "q023",
+    "question": "What is OpenDB and how does .odb relate to .def files?",
+    "expected_topics": ["OpenDB", ".odb", ".def", "database"],
+    "expected_doc_types": ["rtd", "github_markdown"],
+    "should_answer": true
+  },
+  {
+    "id": "q024",
+    "question": "How do I reduce the die area without violating DRC?",
+    "expected_topics": ["CORE_UTILIZATION", "CORE_MARGIN", "area", "congestion"],
+    "expected_doc_types": ["github_markdown", "rtd"],
+    "should_answer": true
+  },
+  {
+    "id": "q025",
+    "question": "Where can I find the CTS (Clock Tree Synthesis) log?",
+    "expected_topics": ["4_1_cts.log", "flow/logs", "CTS", "clock tree"],
+    "expected_doc_types": ["github_markdown", "rtd"],
+    "should_answer": true
+  },
+  {
+    "id": "q026",
+    "question": "What is the license for OpenROAD and can I use it commercially?",
+    "expected_topics": ["BSD", "license", "open source", "commercial"],
+    "expected_doc_types": ["github_markdown", "rtd"],
+    "should_answer": true
+  },
+  {
+    "id": "q027",
+    "question": "How do I generate a Verilog netlist after synthesis?",
+    "expected_topics": ["1_1_yosys.v", "synthesis", "netlist", "yosys"],
+    "expected_doc_types": ["github_markdown", "rtd"],
+    "should_answer": true
+  },
+  {
+    "id": "q028",
+    "question": "What is the quantum gravity chip design technique for photonic chips?",
+    "expected_topics": [],
+    "expected_doc_types": [],
+    "should_answer": false,
+    "reason": "Out-of-domain question — should trigger fallback"
+  },
+  {
+    "id": "q029",
+    "question": "How do I configure the Bitcoin mining ASIC in OpenROAD?",
+    "expected_topics": [],
+    "expected_doc_types": [],
+    "should_answer": false,
+    "reason": "Not relevant to Chipathon or standard OpenROAD flows"
+  },
+  {
+    "id": "q030",
+    "question": "What is the best restaurant near IEEE headquarters?",
+    "expected_topics": [],
+    "expected_doc_types": [],
+    "should_answer": false,
+    "reason": "Completely out of domain — must trigger fallback"
+  }
+]

@@ -1,0 +1,33 @@
+name: Deploy Knowledge Hub to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'hub/**'
+      - '.github/workflows/deploy-hub.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install MkDocs dependencies
+        run: |
+          pip install \
+            mkdocs>=1.6.0 \
+            mkdocs-material>=9.5.0 \
+            mkdocs-material-extensions>=1.3.0 \
+            pymdown-extensions>=10.7
+
+      - name: Deploy to GitHub Pages
+        run: cd hub && mkdocs gh-deploy --force

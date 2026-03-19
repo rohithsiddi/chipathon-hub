@@ -1,0 +1,62 @@
+[project]
+name = "chipathon-hub"
+version = "0.1.0"
+description = "Chipathon Knowledge Hub + Ask Chipathon RAG Chatbot PoC"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    # MkDocs Knowledge Hub
+    "mkdocs>=1.6.0,<2.0",
+    "mkdocs-material>=9.5.0",
+    "mkdocs-material-extensions>=1.3.0",
+    "pymdown-extensions>=10.7",
+
+    # Google Gemini
+    "google-generativeai>=0.8.0",
+    "langchain-google-genai>=2.0.0",
+
+    # LangChain + LangGraph RAG
+    "langchain>=0.3.0",
+    "langchain-community>=0.3.0",
+    "langgraph>=0.2.0",
+
+    # Vector Store
+    "chromadb>=0.5.0",
+
+    # Scraping & Fetching
+    "httpx>=0.27.0",
+    "beautifulsoup4>=4.12.0",
+    "PyGithub>=2.3.0",
+    "markdownify>=0.13.0",
+
+    # CLI & UX
+    "click>=8.1.0",
+    "rich>=13.7.0",
+    "python-dotenv>=1.0.0",
+
+    # API Backend
+    "fastapi>=0.111.0",
+    "uvicorn>=0.30.0",
+
+    # Eval harness
+    "pydantic>=2.7.0",
+    "tqdm>=4.66.0",
+]
+
+[project.scripts]
+ask-chipathon = "chatbot.cli:main"
+chipathon-ingest = "chatbot.ingest.scraper:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["chatbot"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.2.0",
+    "pytest-asyncio>=0.23.0",
+    "ruff>=0.4.0",
+]

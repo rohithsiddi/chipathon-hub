@@ -1,0 +1,42 @@
+name: Deploy API to Hugging Face Spaces
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'chatbot/**'
+      - 'data/vectorstore/**'
+      - 'Dockerfile'
+      - 'pyproject.toml'
+      - 'hf_readme.md'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare HF Space deployment package
+        run: |
+          mkdir -p hf_deploy/data
+          cp -r chatbot/ hf_deploy/chatbot/
+          cp -r data/vectorstore/ hf_deploy/data/vectorstore/
+          cp Dockerfile hf_deploy/Dockerfile
+          cp pyproject.toml hf_deploy/pyproject.toml
+          # HF Spaces needs README.md with YAML frontmatter at the top
+          cat hf_readme.md README.md > hf_deploy/README.md
+
+      - name: Push to Hugging Face Spaces
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          cd hf_deploy
+          git init
+          git config user.email "action@github.com"
+          git config user.name "GitHub Action"
+          git add .
+          git commit -m "Deploy from GitHub @ ${{ github.sha }}"
+          git push --force \
+            https://rohithsiddi:$HF_TOKEN@huggingface.co/spaces/rohithsiddi/chipathon-api \
+            HEAD:main

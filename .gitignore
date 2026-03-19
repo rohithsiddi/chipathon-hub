@@ -1,0 +1,29 @@
+# Environment
+.env
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# Data (raw fetched files — too large for git)
+data/raw/
+data/processed/
+# data/vectorstore/ is committed so it can be bundled in the HF Space Docker image
+
+# MkDocs build output
+hub/site/
+
+# uv
+.uv/
+uv.lock
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
