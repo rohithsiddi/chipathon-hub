@@ -35,6 +35,13 @@ jobs:
           git init
           git config user.email "action@github.com"
           git config user.name "GitHub Action"
+          # HF Spaces requires Git LFS for files > 10MB
+          git lfs install
+          git lfs track "data/vectorstore/*.bin"
+          git lfs track "data/vectorstore/*.sqlite3"
+          git lfs track "data/vectorstore/**/*.bin"
+          git lfs track "data/vectorstore/**/*.pickle"
+          git add .gitattributes
           git add .
           git commit -m "Deploy from GitHub @ ${{ github.sha }}"
           git push --force \
