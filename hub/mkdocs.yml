@@ -12,7 +12,6 @@ site_dir: site
 
 theme:
   name: material
-  custom_dir: overrides
   icon:
     logo: material/memory
   palette:
