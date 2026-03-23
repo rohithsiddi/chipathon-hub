@@ -1,15 +1,13 @@
 """
-chatbot/ingest/embedder.py
+Reads chunks.jsonl from chunker.py, generates Gemini embeddings,
+and stores them in a persistent ChromaDB collection.
 
-Reads chunks.jsonl (from chunker.py), generates Gemini text-embedding-004
-vectors, and stores them in a persistent ChromaDB collection.
-
-Run:
-    python -m chatbot.ingest.embedder
+Run: python -m chatbot.ingest.embedder
 """
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import time
@@ -32,14 +30,17 @@ CHROMA_PERSIST_DIR = Path(os.getenv("CHROMA_PERSIST_DIR", "data/vectorstore"))
 CHROMA_COLLECTION = os.getenv("CHROMA_COLLECTION_NAME", "chipathon_docs")
 CHUNKS_FILE = Path("data/processed/chunks.jsonl")
 
-# Gemini embedding API: max 100 texts per batch call
 BATCH_SIZE = 50
-# Rate limit: max 15 requests/min on free tier
 REQUEST_DELAY_S = 4.0
 
 
+def make_chunk_id(source_url: str, chunk_index: int, text: str) -> str:
+    """Stable content-based ID — prevents duplicates on re-runs."""
+    key = f"{source_url}::{chunk_index}::{text[:120]}"
+    return hashlib.md5(key.encode()).hexdigest()
+
+
 def get_gemini_embeddings(texts: list[str]) -> list[list[float]]:
-    """Embed a batch of texts using Gemini using the new SDK."""
     client = genai.Client(api_key=GEMINI_API_KEY)
     result = client.models.embed_content(
         model=EMBED_MODEL,
@@ -69,7 +70,6 @@ def main(chunks_file: str, persist_dir: str, collection: str, reset: bool):
 
     console.rule("[bold blue]Chipathon Embedder[/bold blue]")
 
-    # ── Setup ChromaDB ──
     persist_path.mkdir(parents=True, exist_ok=True)
     chroma_client = chromadb.PersistentClient(path=str(persist_path))
 
@@ -82,10 +82,9 @@ def main(chunks_file: str, persist_dir: str, collection: str, reset: bool):
 
     col = chroma_client.get_or_create_collection(
         name=collection,
-        metadata={"hnsw:space": "cosine"},  # cosine similarity
+        metadata={"hnsw:space": "cosine"},
     )
 
-    # ── Load chunks ──
     chunks = []
     with open(chunks_path, encoding="utf-8") as f:
         for line in f:
@@ -95,24 +94,27 @@ def main(chunks_file: str, persist_dir: str, collection: str, reset: bool):
 
     console.print(f"[cyan]Loaded {len(chunks)} chunks[/cyan]")
 
-    # Check how many are already indexed
+    all_chunk_ids = [
+        make_chunk_id(c["source_url"], c["chunk_index"], c["text"]) for c in chunks
+    ]
     existing_ids = set(col.get()["ids"])
-    new_chunks = [c for i, c in enumerate(chunks) if str(i) not in existing_ids]
-    if not new_chunks:
+    new_pairs = [(cid, c) for cid, c in zip(all_chunk_ids, chunks) if cid not in existing_ids]
+
+    if not new_pairs:
         console.print("[green]All chunks already embedded. Nothing to do.[/green]")
         return
 
-    console.print(f"[cyan]Embedding {len(new_chunks)} new chunks (skipping {len(chunks) - len(new_chunks)} already indexed)...[/cyan]")
+    console.print(f"[cyan]Embedding {len(new_pairs)} new chunks (skipping {len(chunks) - len(new_pairs)} already indexed)...[/cyan]")
 
-    # ── Embed in batches ──
-    start_idx = len(existing_ids)
     for batch_start in track(
-        range(0, len(new_chunks), BATCH_SIZE),
+        range(0, len(new_pairs), BATCH_SIZE),
         description="Embedding batches...",
         console=console,
     ):
-        batch = new_chunks[batch_start: batch_start + BATCH_SIZE]
-        texts = [c["text"] for c in batch]
+        batch_pairs = new_pairs[batch_start: batch_start + BATCH_SIZE]
+        batch_ids = [p[0] for p in batch_pairs]
+        batch_chunks = [p[1] for p in batch_pairs]
+        texts = [c["text"] for c in batch_chunks]
 
         max_retries = 3
         for attempt in range(max_retries):
@@ -122,29 +124,31 @@ def main(chunks_file: str, persist_dir: str, collection: str, reset: bool):
             except Exception as e:
                 err_msg = str(e)
                 if "429" in err_msg or "RESOURCE_EXHAUSTED" in err_msg:
-                    console.print(f"[yellow]Rate limit hit. Waiting 65s before retry (Attempt {attempt + 1}/{max_retries})...[/yellow]")
+                    console.print(f"[yellow]Rate limit hit. Waiting 65s (attempt {attempt + 1}/{max_retries})...[/yellow]")
                     time.sleep(65)
                 else:
-                    console.print(f"[yellow]Embedding batch failed: {err_msg}. Retrying in 5s (Attempt {attempt + 1}/{max_retries})...[/yellow]")
+                    console.print(f"[yellow]Embedding failed: {err_msg}. Retrying in 5s...[/yellow]")
                     time.sleep(5)
         else:
             console.print("[red]Max retries exceeded. Skipping batch.[/red]")
             continue
 
-        ids = [str(start_idx + batch_start + j) for j in range(len(batch))]
-        metadatas = [
-            {
+        metadatas = []
+        for c in batch_chunks:
+            meta = c.get("metadata", {})
+            metadatas.append({
                 "source_url": c["source_url"],
                 "title": c["title"],
                 "section_heading": c["section_heading"],
                 "doc_type": c["doc_type"],
                 "chunk_index": str(c["chunk_index"]),
-            }
-            for c in batch
-        ]
+                "issue_number": str(meta.get("issue_number", "")),
+                "labels": ",".join(meta.get("labels", [])) if isinstance(meta.get("labels"), list) else "",
+                "repo": meta.get("repo", ""),
+            })
 
         col.add(
-            ids=ids,
+            ids=batch_ids,
             embeddings=embeddings,
             documents=texts,
             metadatas=metadatas,
@@ -153,7 +157,7 @@ def main(chunks_file: str, persist_dir: str, collection: str, reset: bool):
         time.sleep(REQUEST_DELAY_S)
 
     console.rule()
-    console.print(f"[green]✅ ChromaDB collection '{collection}' has {col.count()} vectors[/green]")
+    console.print(f"[green]ChromaDB collection '{collection}' has {col.count()} vectors[/green]")
     console.print(f"[dim]Stored at: {persist_path}[/dim]")
     console.print("\nReady! Run: [bold]ask-chipathon \"your question here\"[/bold]")
 

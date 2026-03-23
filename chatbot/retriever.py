@@ -1,10 +1,3 @@
-"""
-chatbot/retriever.py
-
-Wraps ChromaDB with Gemini query embedding and returns
-ranked chunks with confidence scores and citation metadata.
-"""
-
 from __future__ import annotations
 
 import os
@@ -32,42 +25,31 @@ class RetrievedChunk:
     title: str
     section_heading: str
     doc_type: str
-    score: float  # cosine similarity [0, 1]
+    score: float
 
     @property
     def citation(self) -> str:
-        """Human-readable citation string."""
         return f"{self.title} — {self.section_heading} | {self.source_url}"
 
     @property
     def short_citation(self) -> str:
-        """Short citation for inline display."""
         return f"{self.title}: {self.section_heading}"
 
 
 class ChipathonRetriever:
-    """
-    Retrieves relevant chunks from ChromaDB using Gemini query embeddings.
-
-    Usage:
-        retriever = ChipathonRetriever()
-        results = retriever.retrieve("How do I fix DRC errors?")
-    """
 
     def __init__(self):
         if not GEMINI_API_KEY or GEMINI_API_KEY == "your_gemini_api_key_here":
             raise ValueError(
                 "GEMINI_API_KEY not set. Copy .env.example to .env and set your key."
             )
-        self._init_gemini()
+        self._init_clients()
 
-    def _init_gemini(self) -> None:
-        """Initialize the Gemini and Chroma clients."""
+    def _init_clients(self) -> None:
         if not hasattr(self, "client"):
             self.client = genai.Client(api_key=GEMINI_API_KEY)
 
-        persist_path = str(CHROMA_PERSIST_DIR)
-        client = chromadb.PersistentClient(path=persist_path)
+        client = chromadb.PersistentClient(path=str(CHROMA_PERSIST_DIR))
         self._collection = client.get_or_create_collection(
             name=CHROMA_COLLECTION,
             metadata={"hnsw:space": "cosine"},
@@ -80,8 +62,7 @@ class ChipathonRetriever:
                 contents=query,
                 config=genai.types.EmbedContentConfig(task_type="RETRIEVAL_QUERY")
             )
-            query_embedding = result.embeddings[0].values
-            return query_embedding
+            return result.embeddings[0].values
         except Exception as e:
             print(f"Error embedding query: {e}")
             return []
@@ -92,13 +73,6 @@ class ChipathonRetriever:
         top_k: int = TOP_K,
         doc_type_filter: str | None = None,
     ) -> tuple[list[RetrievedChunk], float]:
-        """
-        Retrieve top-k chunks for a query.
-
-        Returns:
-            (chunks, max_confidence) — chunks sorted by score desc,
-            and the highest confidence score among them.
-        """
         if self._collection.count() == 0:
             return [], 0.0
 

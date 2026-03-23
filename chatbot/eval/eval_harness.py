@@ -53,7 +53,7 @@ class EvalResult:
     @property
     def fallback_ok(self) -> bool:
         """No-answer correctness: unanswerable questions should trigger fallback."""
-        return not self.should_answer == self.is_fallback
+        return (not self.should_answer) == self.is_fallback
 
     @property
     def groundedness_score(self) -> float:
@@ -144,7 +144,12 @@ def run_eval(questions: list[dict], delay_s: float = 1.0) -> EvalReport:
         sum(1 for r in unans_results if r.is_fallback) / len(unans_results)
         if unans_results else 0.0
     )
-    avg_confidence = sum(r.confidence for r in results) / len(results) if results else 0.0
+    # Avg confidence over answerable questions only — unanswerable always score near 0
+    # by design and skew the metric downward unfairly.
+    avg_confidence = (
+        sum(r.confidence for r in ans_results) / len(ans_results)
+        if ans_results else 0.0
+    )
 
     return EvalReport(
         timestamp=datetime.utcnow().isoformat(),

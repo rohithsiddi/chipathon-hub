@@ -1,14 +1,3 @@
-"""
-chatbot/cli.py
-
-Rich-formatted CLI for Ask Chipathon.
-
-Usage:
-    ask-chipathon "How do I fix DRC errors?"
-    ask-chipathon --interactive
-    ask-chipathon --debug "What is CORE_UTILIZATION?"
-"""
-
 from __future__ import annotations
 
 import sys
@@ -24,15 +13,13 @@ from rich import box
 console = Console()
 
 BANNER = """
-   ╔═══════════════════════════════════════════╗
-   ║   🤖  Ask Chipathon  |  OpenROAD RAG Bot  ║
-   ║   Powered by Gemini 1.5 Pro + ChromaDB    ║
-   ╚═══════════════════════════════════════════╝
+   ╔════════════════════════════════════════╗
+   ║   Ask Chipathon  |  OpenROAD RAG Bot  ║
+   ╚════════════════════════════════════════╝
 """
 
 
 def render_answer(result: dict) -> None:
-    """Render the RAG result to the terminal with Rich formatting."""
     is_fallback = result.get("is_fallback", False)
     confidence = result.get("confidence", 0.0)
     chunks = result.get("chunks", [])
@@ -40,7 +27,6 @@ def render_answer(result: dict) -> None:
     answer = result.get("answer", "No answer generated.")
     related = result.get("related_topics", [])
 
-    # ── Confidence badge ──
     if is_fallback:
         badge = f"[bold red]⚠️  Low confidence ({confidence:.2f})[/bold red]"
     else:
@@ -49,7 +35,6 @@ def render_answer(result: dict) -> None:
     console.print(badge)
     console.print()
 
-    # ── Main answer ──
     answer_panel = Panel(
         Markdown(answer),
         title="[bold]Answer[/bold]",
@@ -58,14 +43,12 @@ def render_answer(result: dict) -> None:
     )
     console.print(answer_panel)
 
-    # ── Citations (only for high-confidence answers) ──
     if citations:
         console.print()
         console.print("[dim]📎 Sources:[/dim]")
         for citation in citations:
             console.print(f"  [dim]{citation}[/dim]")
 
-    # ── Related topics from partial retrieval ──
     if related:
         console.print()
         console.print("[dim]💡 Related topics:[/dim]")
@@ -74,7 +57,6 @@ def render_answer(result: dict) -> None:
 
 
 def render_debug(result: dict) -> None:
-    """Show debug info: retrieved chunks + scores."""
     chunks = result.get("chunks", [])
     if not chunks:
         console.print("[yellow]No chunks retrieved.[/yellow]")
@@ -111,7 +93,7 @@ def render_debug(result: dict) -> None:
 @click.option("--ingest", is_flag=True, default=False, help="Run full ingest pipeline first")
 def main(query: str | None, interactive: bool, debug: bool, ingest: bool) -> None:
     """
-    Ask Chipathon — Gemini-powered Q&A for IEEE SSCS Chipathon + OpenROAD flows.
+    Ask Chipathon — Q&A for IEEE SSCS Chipathon + OpenROAD flows.
 
     Examples:\n
         ask-chipathon "How do I fix DRC errors?"\n
@@ -130,12 +112,12 @@ def main(query: str | None, interactive: bool, debug: bool, ingest: bool) -> Non
         run_embedder(standalone_mode=False)
         console.print()
 
-    # Lazy import (avoids slow startup for --help)
+    # lazy import so --help doesn't trigger model loading
     try:
         from chatbot.rag_chain import ask
     except Exception as e:
         console.print(f"[red]Failed to initialize RAG chain: {e}[/red]")
-        console.print("[yellow]Make sure GEMINI_API_KEY is set in .env and the knowledge base is indexed.[/yellow]")
+        console.print("[yellow]Make sure GEMINI_API_KEY and OPENAI_API_KEY are set in .env and the knowledge base is indexed.[/yellow]")
         sys.exit(1)
 
     def run_query(q: str) -> None:

@@ -1,0 +1,420 @@
+{
+  "timestamp": "2026-03-11T07:15:57.595540",
+  "total_questions": 30,
+  "answerable_count": 27,
+  "unanswerable_count": 3,
+  "citation_coverage": 0.4815,
+  "avg_groundedness": 0.629,
+  "no_answer_correctness": 1.0,
+  "avg_confidence": 0.4067,
+  "results": [
+    {
+      "question_id": "q001",
+      "question": "How do I fix setup timing violations in OpenROAD?",
+      "should_answer": true,
+      "confidence": 0.8801,
+      "is_fallback": false,
+      "has_citations": true,
+      "answer_snippet": "To fix setup timing violations in OpenROAD, you can use the `repair_timing` command with the `-setup` option. This command attempts to resolve setup violations by applying various repair moves such as",
+      "groundedness_keywords_found": [
+        "timing",
+        "setup"
+      ],
+      "groundedness_keywords_missing": [
+        "WNS",
+        "clock period",
+        "GPL_ROUTABILITY_DRIVEN"
+      ]
+    },
+    {
+      "question_id": "q002",
+      "question": "Where is the final GDS file after the ORFS flow completes?",
+      "should_answer": true,
+      "confidence": 0.8671,
+      "is_fallback": false,
+      "has_citations": true,
+      "answer_snippet": "The final GDS file is located at `results/sky130hd/ibex/base/6_1_merged.gds`, and it is then copied to `results/sky130hd/ibex/base/6_final.gds`. [1]",
+      "groundedness_keywords_found": [
+        "6_final.gds",
+        "results"
+      ],
+      "groundedness_keywords_missing": [
+        "flow/results"
+      ]
+    },
+    {
+      "question_id": "q003",
+      "question": "What does CORE_UTILIZATION control in OpenROAD flow scripts?",
+      "should_answer": true,
+      "confidence": 0.8682,
+      "is_fallback": false,
+      "has_citations": true,
+      "answer_snippet": "The provided context does not contain information about what CORE_UTILIZATION controls in OpenROAD flow scripts. [Source 1, Source 2, Source 3, Source 4, Source 5]",
+      "groundedness_keywords_found": [
+        "utilization"
+      ],
+      "groundedness_keywords_missing": [
+        "standard cells",
+        "core area",
+        "config.mk"
+      ]
+    },
+    {
+      "question_id": "q004",
+      "question": "How do I install OpenROAD using Docker?",
+      "should_answer": true,
+      "confidence": 0.8936,
+      "is_fallback": false,
+      "has_citations": true,
+      "answer_snippet": "To build OpenROAD using Docker, navigate to the main repository directory and run the following command:\n\n```bash\ndocker build -t openroad .\n```\n\nAlternatively, you can use `podman`:\n\n```bash\npodman b",
+      "groundedness_keywords_found": [
+        "docker"
+      ],
+      "groundedness_keywords_missing": [
+        "pull",
+        "container",
+        "openroad/flow"
+      ]
+    },
+    {
+      "question_id": "q005",
+      "question": "How do I re-run only the detailed routing stage without rerunning the full flow?",
+      "should_answer": true,
+      "confidence": 0.8742,
+      "is_fallback": false,
+      "has_citations": true,
+      "answer_snippet": "This document does not contain the answer to this question.",
+      "groundedness_keywords_found": [],
+      "groundedness_keywords_missing": [
+        "make clean_drt",
+        "5_route",
+        "make target",
+        "stage"
+      ]
+    },
+    {
+      "question_id": "q006",
+      "question": "What is WNS and TNS in timing reports?",
+      "should_answer": true,
+      "confidence": 0.888,
+      "is_fallback": false,
+      "has_citations": true,
+      "answer_snippet": "The context does not define WNS and TNS. However, it shows examples of their usage in timing reports.\n\n*   `report_worst_slack -max` can be used to obtain the WNS [Source 1, Source 3].\n*   `report_tns",
+      "groundedness_keywords_found": [],
+      "groundedness_keywords_missing": [
+        "worst negative slack",
+        "total negative slack",
+        "timing violation"
+      ]
+    },
+    {
+      "question_id": "q007",
+      "question": "How do I fix DRC violations related to antenna rules?",
+      "should_answer": true,
+      "confidence": 0.8768,
+      "is_fallback": false,
+      "has_citations": true,
+      "answer_snippet": "The provided context discusses issues and potential improvements related to antenna repair, but it does not contain explicit instructions on how to fix DRC violations related to antenna rules.\n\nThe co",
+      "groundedness_keywords_found": [
+        "antenna",
+        "diode"
+      ],
+      "groundedness_keywords_missing": [
+        "ANTENNA_REPAIR",
+        "long metal routes"
+      ]
+    },
+    {
+      "question_id": "q008",
+      "question": "Where are the log files stored during the OpenROAD flow?",
+      "should_answer": true,
+      "confidence": 0.8957,
+      "is_fallback": false,
+      "has_citations": true,
+      "answer_snippet": "Log files are stored in the `logs/sky130hd/ibex/base` directory. [1, 2, 3]",
+      "groundedness_keywords_found": [],
+      "groundedness_keywords_missing": [
+        "flow/logs",
+        "stage log",
+        ".log"
+      ]
+    },
+    {
+      "question_id": "q009",
+      "question": "How do I change the clock period for my design?",
+      "should_answer": true,
+      "confidence": 0.8514,
+      "is_fallback": false,
+      "has_citations": true,
+      "answer_snippet": "To change the clock period for your design, you can modify the `create_clock` command in your `.sdc` file. For example, to set the clock period to 17.4 time units, you would use:\n\n```tcl\ncreate_clock ",
+      "groundedness_keywords_found": [],
+      "groundedness_keywords_missing": [
+        "CLOCK_PERIOD",
+        "config.mk",
+        "nanoseconds"
+      ]
+    },
+    {
+      "question_id": "q010",
+      "question": "What files do I need to submit for the Chipathon?",
+      "should_answer": true,
+      "confidence": 0.8582,
+      "is_fallback": false,
+      "has_citations": true,
+      "answer_snippet": "I cannot answer your question. The provided context does not contain information about the specific files that need to be submitted for the Chipathon.",
+      "groundedness_keywords_found": [],
+      "groundedness_keywords_missing": [
+        "6_final.gds",
+        "DEF",
+        "metrics.json",
+        "DRC report",
+        "timing report"
+      ]
+    },
+    {
+      "question_id": "q011",
+      "question": "How do I handle routing congestion in OpenROAD?",
+      "should_answer": true,
+      "confidence": 0.8827,
+      "is_fallback": false,
+      "has_citations": true,
+      "answer_snippet": "This document does not contain information on how to handle routing congestion in OpenROAD.",
+      "groundedness_keywords_found": [
+        "congestion"
+      ],
+      "groundedness_keywords_missing": [
+        "ROUTING_TARGET_DENSITY",
+        "utilization",
+        "global route"
+      ]
+    },
+    {
+      "question_id": "q012",
+      "question": "What PDKs are supported by OpenROAD-flow-scripts?",
+      "should_answer": true,
+      "confidence": 0.8813,
+      "is_fallback": false,
+      "has_citations": true,
+      "answer_snippet": "The following PDKs are supported by OpenROAD-flow-scripts:\n\n* `sky130hd`\n* `sky130hs`\n* `nangate45`\n* `asap7`\n\nThese variables must be defined in the platform-specific config file located in the OpenR",
+      "groundedness_keywords_found": [
+        "nangate45",
+        "sky130",
+        "asap7",
+        "PDK"
+      ],
+      "groundedness_keywords_missing": []
+    },
+    {
+      "question_id": "q013",
+      "question": "How do I view DRC violations in KLayout?",
+      "should_answer": true,
+      "confidence": 0.8659,
+      "is_fallback": false,
+      "has_citations": true,
+      "answer_snippet": "The provided context does not contain information on how to view DRC violations in KLayout.",
+      "groundedness_keywords_found": [
+        "klayout",
+        "DRC"
+      ],
+      "groundedness_keywords_missing": [
+        "GDS",
+        "lydrc"
+      ]
+    },
+    {
+      "question_id": "q014",
+      "question": "What is the metrics.json file and what does it contain?",
+      "should_answer": true,
+      "confidence": 0.8181,
+      "is_fallback": true,
+      "has_citations": false,
+      "answer_snippet": "\u26a0\ufe0f Low confidence \u2014 I don't have a reliable answer for this.\n\n**To get help, please share:**\n1.  The exact command or script that generated the `metrics.json` file.\n2.  The content of the `metrics.jso",
+      "groundedness_keywords_found": [
+        "metrics.json"
+      ],
+      "groundedness_keywords_missing": [
+        "WNS",
+        "DRC errors",
+        "area",
+        "power",
+        "QoR"
+      ]
+    },
+    {
+      "question_id": "q015",
+      "question": "How do I run just the synthesis stage in ORFS?",
+      "should_answer": true,
+      "confidence": 0.0,
+      "is_fallback": true,
+      "has_citations": false,
+      "answer_snippet": "ERROR: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 10, model: gemini-2.5-flash-lite\\nPlease retry in 14.024358017s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash-lite'}, 'quotaValue': '10'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '14s'}]}}",
+      "groundedness_keywords_found": [],
+      "groundedness_keywords_missing": []
+    },
+    {
+      "question_id": "q016",
+      "question": "Why does the flow hang or consume too much memory?",
+      "should_answer": true,
+      "confidence": 0.0,
+      "is_fallback": true,
+      "has_citations": false,
+      "answer_snippet": "ERROR: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 10, model: gemini-2.5-flash-lite\\nPlease retry in 13.130209981s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'model': 'gemini-2.5-flash-lite', 'location': 'global'}, 'quotaValue': '10'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '13s'}]}}",
+      "groundedness_keywords_found": [],
+      "groundedness_keywords_missing": []
+    },
+    {
+      "question_id": "q017",
+      "question": "How do I enable post-route optimization in OpenROAD?",
+      "should_answer": true,
+      "confidence": 0.0,
+      "is_fallback": true,
+      "has_citations": false,
+      "answer_snippet": "ERROR: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 10, model: gemini-2.5-flash-lite\\nPlease retry in 12.213097281s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash-lite'}, 'quotaValue': '10'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '12s'}]}}",
+      "groundedness_keywords_found": [],
+      "groundedness_keywords_missing": []
+    },
+    {
+      "question_id": "q018",
+      "question": "What is the difference between global routing and detailed routing?",
+      "should_answer": true,
+      "confidence": 0.0,
+      "is_fallback": true,
+      "has_citations": false,
+      "answer_snippet": "ERROR: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 10, model: gemini-2.5-flash-lite\\nPlease retry in 11.511457726s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'model': 'gemini-2.5-flash-lite', 'location': 'global'}, 'quotaValue': '10'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '11s'}]}}",
+      "groundedness_keywords_found": [],
+      "groundedness_keywords_missing": []
+    },
+    {
+      "question_id": "q019",
+      "question": "How do I fix Apple Silicon (M1/M2) Docker issues with OpenROAD?",
+      "should_answer": true,
+      "confidence": 0.0,
+      "is_fallback": true,
+      "has_citations": false,
+      "answer_snippet": "ERROR: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 10, model: gemini-2.5-flash-lite\\nPlease retry in 10.780435772s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash-lite'}, 'quotaValue': '10'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '10s'}]}}",
+      "groundedness_keywords_found": [],
+      "groundedness_keywords_missing": []
+    },
+    {
+      "question_id": "q020",
+      "question": "What does the floorplan stage produce and where is the output?",
+      "should_answer": true,
+      "confidence": 0.0,
+      "is_fallback": true,
+      "has_citations": false,
+      "answer_snippet": "ERROR: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 10, model: gemini-2.5-flash-lite\\nPlease retry in 10.021656415s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash-lite'}, 'quotaValue': '10'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '10s'}]}}",
+      "groundedness_keywords_found": [],
+      "groundedness_keywords_missing": []
+    },
+    {
+      "question_id": "q021",
+      "question": "How do I interpret the power report from OpenROAD?",
+      "should_answer": true,
+      "confidence": 0.0,
+      "is_fallback": true,
+      "has_citations": false,
+      "answer_snippet": "ERROR: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 10, model: gemini-2.5-flash-lite\\nPlease retry in 9.283135133s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash-lite'}, 'quotaValue': '10'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '9s'}]}}",
+      "groundedness_keywords_found": [],
+      "groundedness_keywords_missing": []
+    },
+    {
+      "question_id": "q022",
+      "question": "How do I add false paths to fix multi-clock domain violations?",
+      "should_answer": true,
+      "confidence": 0.0,
+      "is_fallback": true,
+      "has_citations": false,
+      "answer_snippet": "ERROR: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 10, model: gemini-2.5-flash-lite\\nPlease retry in 8.407239465s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash-lite'}, 'quotaValue': '10'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '8s'}]}}",
+      "groundedness_keywords_found": [],
+      "groundedness_keywords_missing": []
+    },
+    {
+      "question_id": "q023",
+      "question": "What is OpenDB and how does .odb relate to .def files?",
+      "should_answer": true,
+      "confidence": 0.0,
+      "is_fallback": true,
+      "has_citations": false,
+      "answer_snippet": "ERROR: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 10, model: gemini-2.5-flash-lite\\nPlease retry in 7.660419352s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'model': 'gemini-2.5-flash-lite', 'location': 'global'}, 'quotaValue': '10'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '7s'}]}}",
+      "groundedness_keywords_found": [],
+      "groundedness_keywords_missing": []
+    },
+    {
+      "question_id": "q024",
+      "question": "How do I reduce the die area without violating DRC?",
+      "should_answer": true,
+      "confidence": 0.0,
+      "is_fallback": true,
+      "has_citations": false,
+      "answer_snippet": "ERROR: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 10, model: gemini-2.5-flash-lite\\nPlease retry in 6.945760094s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash-lite'}, 'quotaValue': '10'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '6s'}]}}",
+      "groundedness_keywords_found": [],
+      "groundedness_keywords_missing": []
+    },
+    {
+      "question_id": "q025",
+      "question": "Where can I find the CTS (Clock Tree Synthesis) log?",
+      "should_answer": true,
+      "confidence": 0.0,
+      "is_fallback": true,
+      "has_citations": false,
+      "answer_snippet": "ERROR: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 10, model: gemini-2.5-flash-lite\\nPlease retry in 6.235169468s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash-lite'}, 'quotaValue': '10'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '6s'}]}}",
+      "groundedness_keywords_found": [],
+      "groundedness_keywords_missing": []
+    },
+    {
+      "question_id": "q026",
+      "question": "What is the license for OpenROAD and can I use it commercially?",
+      "should_answer": true,
+      "confidence": 0.0,
+      "is_fallback": true,
+      "has_citations": false,
+      "answer_snippet": "ERROR: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 10, model: gemini-2.5-flash-lite\\nPlease retry in 5.516355933s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash-lite'}, 'quotaValue': '10'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '5s'}]}}",
+      "groundedness_keywords_found": [],
+      "groundedness_keywords_missing": []
+    },
+    {
+      "question_id": "q027",
+      "question": "How do I generate a Verilog netlist after synthesis?",
+      "should_answer": true,
+      "confidence": 0.0,
+      "is_fallback": true,
+      "has_citations": false,
+      "answer_snippet": "ERROR: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 10, model: gemini-2.5-flash-lite\\nPlease retry in 4.64000286s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash-lite'}, 'quotaValue': '10'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '4s'}]}}",
+      "groundedness_keywords_found": [],
+      "groundedness_keywords_missing": []
+    },
+    {
+      "question_id": "q028",
+      "question": "What is the quantum gravity chip design technique for photonic chips?",
+      "should_answer": false,
+      "confidence": 0.0,
+      "is_fallback": true,
+      "has_citations": false,
+      "answer_snippet": "ERROR: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 10, model: gemini-2.5-flash-lite\\nPlease retry in 3.866574765s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash-lite'}, 'quotaValue': '10'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '3s'}]}}",
+      "groundedness_keywords_found": [],
+      "groundedness_keywords_missing": []
+    },
+    {
+      "question_id": "q029",
+      "question": "How do I configure the Bitcoin mining ASIC in OpenROAD?",
+      "should_answer": false,
+      "confidence": 0.0,
+      "is_fallback": true,
+      "has_citations": false,
+      "answer_snippet": "ERROR: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 10, model: gemini-2.5-flash-lite\\nPlease retry in 3.141852436s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash-lite'}, 'quotaValue': '10'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '3s'}]}}",
+      "groundedness_keywords_found": [],
+      "groundedness_keywords_missing": []
+    },
+    {
+      "question_id": "q030",
+      "question": "What is the best restaurant near IEEE headquarters?",
+      "should_answer": false,
+      "confidence": 0.0,
+      "is_fallback": true,
+      "has_citations": false,
+      "answer_snippet": "ERROR: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 10, model: gemini-2.5-flash-lite\\nPlease retry in 2.432470997s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash-lite'}, 'quotaValue': '10'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '2s'}]}}",
+      "groundedness_keywords_found": [],
+      "groundedness_keywords_missing": []
+    }
+  ]
+}

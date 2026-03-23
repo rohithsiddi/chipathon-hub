@@ -1,23 +1,9 @@
-"""
-chatbot/rag_chain.py
-
-LangGraph state machine implementing the Ask Chipathon RAG flow:
-
-  [Query] → [Retrieve] → [Confidence Check]
-                                ↓              ↓
-                         [High: Generate   [Low: Triage
-                          with citations]   fallback]
-
-The fallback node does NOT hallucinate — it returns a structured triage
-message asking the user for specific logs/config details.
-"""
-
 from __future__ import annotations
 
 import os
-from typing import TypedDict, Annotated
+from typing import TypedDict
 
-from google import genai
+from openai import OpenAI
 from dotenv import load_dotenv
 from langgraph.graph import StateGraph, END
 
@@ -25,11 +11,10 @@ from chatbot.retriever import ChipathonRetriever, RetrievedChunk
 
 load_dotenv()
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-CHAT_MODEL = os.getenv("GEMINI_CHAT_MODEL", "gemini-2.0-flash")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+CHAT_MODEL = os.getenv("CHAT_MODEL", "gpt-4o-mini")
 CONFIDENCE_THRESHOLD = float(os.getenv("RETRIEVAL_CONFIDENCE_THRESHOLD", "0.45"))
 
-# ── State ─────────────────────────────────────────────────────────────────────
 
 class RAGState(TypedDict):
     query: str
@@ -40,8 +25,6 @@ class RAGState(TypedDict):
     is_fallback: bool
     related_topics: list[str]
 
-
-# ── Prompts ───────────────────────────────────────────────────────────────────
 
 SYSTEM_PROMPT = """You are Ask Chipathon — an expert assistant for IEEE SSCS Chipathon participants
 using OpenROAD-based EDA flows to go from RTL to GDSII.
@@ -71,7 +54,7 @@ TRIAGE_PROMPT_TEMPLATE = """You are Ask Chipathon, a strict technical assistant 
 
 Question: {query}
 
-Generate a structured triage response. 
+Generate a structured triage response.
 
 If the question is completely unrelated to chip design, OpenROAD, or the Chipathon (e.g. baking, weather, general chat), simply state that you only answer questions related to the Chipathon and OpenROAD flow.
 
@@ -91,94 +74,67 @@ Format your response as:
 """
 
 
-# ── Nodes ─────────────────────────────────────────────────────────────────────
-
 def retrieve_node(state: RAGState) -> RAGState:
-    """Retrieve relevant chunks from ChromaDB."""
     retriever = ChipathonRetriever()
     chunks, confidence = retriever.retrieve(state["query"])
     return {**state, "chunks": chunks, "confidence": confidence}
 
 
 def confidence_router(state: RAGState) -> str:
-    """Route based on retrieval confidence."""
     if state["confidence"] >= CONFIDENCE_THRESHOLD:
         return "generate"
     return "fallback"
 
 
 def generate_node(state: RAGState) -> RAGState:
-    """Generate an answer using Gemini with retrieved context."""
-    client = genai.Client(api_key=GEMINI_API_KEY)
-    
-    # Build context string with source labels
+    client = OpenAI(api_key=OPENAI_API_KEY)
+
     context_parts = []
     for i, chunk in enumerate(state["chunks"], 1):
-        context_parts.append(
-            f"[Source {i}: {chunk.short_citation}]\n{chunk.text}"
-        )
+        context_parts.append(f"[Source {i}: {chunk.short_citation}]\n{chunk.text}")
     context = "\n\n---\n\n".join(context_parts)
 
-    prompt = ANSWER_PROMPT_TEMPLATE.format(
-        context=context,
-        query=state["query"],
-    )
+    prompt = ANSWER_PROMPT_TEMPLATE.format(context=context, query=state["query"])
 
-    response = client.models.generate_content(
+    response = client.chat.completions.create(
         model=CHAT_MODEL,
-        contents=prompt,
-        config=genai.types.GenerateContentConfig(
-            system_instruction=SYSTEM_PROMPT,
-        )
+        messages=[
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": prompt},
+        ],
     )
-    answer = response.text.strip()
+    answer = response.choices[0].message.content.strip()
 
     citations = [
         f"[{i}] {chunk.citation}"
         for i, chunk in enumerate(state["chunks"], 1)
     ]
 
-    return {
-        **state,
-        "answer": answer,
-        "citations": citations,
-        "is_fallback": False,
-        "related_topics": [],
-    }
+    return {**state, "answer": answer, "citations": citations, "is_fallback": False, "related_topics": []}
 
 
 def fallback_node(state: RAGState) -> RAGState:
-    """Generate a structured triage fallback when confidence is low."""
-    client = genai.Client(api_key=GEMINI_API_KEY)
+    client = OpenAI(api_key=OPENAI_API_KEY)
 
     prompt = TRIAGE_PROMPT_TEMPLATE.format(
         confidence=state["confidence"],
         query=state["query"],
     )
 
-    response = client.models.generate_content(
+    response = client.chat.completions.create(
         model=CHAT_MODEL,
-        contents=prompt
+        messages=[{"role": "user", "content": prompt}],
     )
-    triage_text = response.text.strip()
+    triage_text = response.choices[0].message.content.strip()
 
-    # Extract related topics from the chunks we did find (even if low confidence)
     related_topics = list({
         chunk.section_heading
         for chunk in state["chunks"][:3]
         if chunk.section_heading and chunk.score > 0.2
     })
 
-    return {
-        **state,
-        "answer": triage_text,
-        "citations": [],
-        "is_fallback": True,
-        "related_topics": related_topics,
-    }
+    return {**state, "answer": triage_text, "citations": [], "is_fallback": True, "related_topics": related_topics}
 
-
-# ── Graph ──────────────────────────────────────────────────────────────────────
 
 def build_rag_graph() -> StateGraph:
     graph = StateGraph(RAGState)
@@ -199,21 +155,10 @@ def build_rag_graph() -> StateGraph:
     return graph.compile()
 
 
-# ── Public API ────────────────────────────────────────────────────────────────
-
 _graph = None
 
 
 def ask(query: str) -> RAGState:
-    """
-    Main entry point: ask a question and get back a RAGState with
-    answer, citations, confidence, and is_fallback flag.
-
-    Usage:
-        from chatbot.rag_chain import ask
-        result = ask("How do I fix DRC errors?")
-        print(result["answer"])
-    """
     global _graph
     if _graph is None:
         _graph = build_rag_graph()

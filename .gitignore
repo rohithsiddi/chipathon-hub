@@ -27,3 +27,8 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+
+# Additional virtual envs
+.chatbot-venv/
+.uv-cache/
+.tmp/

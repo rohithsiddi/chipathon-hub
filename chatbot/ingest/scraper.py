@@ -1,21 +1,18 @@
 """
-chatbot/ingest/scraper.py
-
 Fetches content from OpenROAD sources:
-  1. OpenROAD ReadTheDocs site (HTTP scrape)
-  2. OpenROAD-flow-scripts GitHub repo (markdown files via GitHub API)
-  3. OpenROAD GitHub Issues (answered/closed)
+  1. OpenROAD ReadTheDocs pages
+  2. ORFS GitHub repo markdown files
+  3. OpenROAD GitHub Issues (closed, with comments)
   4. OpenROAD GitHub Discussions
 
-Run directly:
-    python -m chatbot.ingest.scraper
-    chipathon-ingest       # if installed via uv pip install -e .
+Run: python -m chatbot.ingest.scraper
 """
 
 from __future__ import annotations
 
 import json
 import os
+import re
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -34,12 +31,10 @@ load_dotenv()
 
 console = Console()
 
-# ── Configuration ─────────────────────────────────────────────────────────────
-
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "")
-# Treat placeholder value as unset
 if GITHUB_TOKEN in ("your_github_token_here", "placeholder", ""):
     GITHUB_TOKEN = ""
+
 RAW_DATA_DIR = Path(os.getenv("RAW_DATA_DIR", "data/raw"))
 
 SOURCES = {
@@ -47,7 +42,6 @@ SOURCES = {
     "openroad_repo": "The-OpenROAD-Project/OpenROAD",
 }
 
-# RTD pages to scrape
 RTD_PAGES = [
     "https://openroad.readthedocs.io/en/latest/",
     "https://openroad.readthedocs.io/en/latest/user/FAQS.html",
@@ -57,7 +51,6 @@ RTD_PAGES = [
     "https://openroad-flow-scripts.readthedocs.io/en/latest/tutorials/FlowTutorial.html",
 ]
 
-# GitHub repo paths to fetch markdown from
 ORFS_MARKDOWN_PATHS = [
     "README.md",
     "flow/README.md",
@@ -65,14 +58,14 @@ ORFS_MARKDOWN_PATHS = [
     "docs/",
 ]
 
-# Issue/discussion limits (keep reasonable for PoC)
 MAX_ISSUES = 100
 MAX_DISCUSSIONS = 50
+MAX_COMMENTS_PER_ISSUE = 10
+MIN_ISSUE_BODY_CHARS = 50
 
 
 @dataclass
 class Document:
-    """A single fetched document with metadata."""
     content: str
     source_url: str
     title: str
@@ -80,10 +73,18 @@ class Document:
     metadata: dict = field(default_factory=dict)
 
 
-# ── Scrapers ──────────────────────────────────────────────────────────────────
+def clean_markdown(text: str) -> str:
+    """Remove common scraping artifacts from markdownified RTD content."""
+    text = re.sub(r'\n{3,}', '\n\n', text)
+    text = re.sub(r'\s*\[¶\]\([^)]+\)', '', text)
+    text = re.sub(r'\s*¶', '', text)
+    text = re.sub(r'\[(?:Edit|View source?)[^\]]*\]\([^)]+\)', '', text, flags=re.IGNORECASE)
+    text = re.sub(r'\[\]\([^)]*\)', '', text)
+    text = re.sub(r'\n\s*\[(?:next|previous|index|contents)\][^\n]*', '', text, flags=re.IGNORECASE)
+    return text.strip()
+
 
 def scrape_rtd_page(url: str, client: httpx.Client) -> Document | None:
-    """Scrape a ReadTheDocs page and convert HTML to markdown."""
     try:
         resp = client.get(url, timeout=15)
         resp.raise_for_status()
@@ -92,16 +93,26 @@ def scrape_rtd_page(url: str, client: httpx.Client) -> Document | None:
         return None
 
     soup = BeautifulSoup(resp.text, "html.parser")
-
-    # Extract main content — RTD uses .document or article elements
     main = soup.find("div", {"role": "main"}) or soup.find("article") or soup.find("body")
     if not main:
         return None
+
+    # Strip navigation and UI chrome — these are pure noise in embeddings
+    for tag in main.find_all(["nav", "script", "style", "button", "footer"]):
+        tag.decompose()
+    for cls in ["headerlink", "toctree-wrapper", "sphinx-tabs-tab"]:
+        for tag in main.find_all(class_=cls):
+            tag.decompose()
+    for tag in main.find_all("div", class_=re.compile(r"breadcrumb|highlight-default")):
+        tag.decompose()
+    for tag in main.find_all("a", string=re.compile(r"edit|source", re.IGNORECASE)):
+        tag.decompose()
 
     title_tag = soup.find("h1")
     title = title_tag.get_text(strip=True) if title_tag else url
 
     md_content = markdownify(str(main), heading_style="ATX", strip=["script", "style"])
+    md_content = clean_markdown(md_content)
 
     return Document(
         content=md_content,
@@ -113,7 +124,6 @@ def scrape_rtd_page(url: str, client: httpx.Client) -> Document | None:
 
 
 def fetch_github_markdown(gh: Github, repo_name: str, path: str) -> Iterator[Document]:
-    """Fetch markdown files from a GitHub repo path."""
     try:
         repo = gh.get_repo(repo_name)
     except GithubException as e:
@@ -125,7 +135,6 @@ def fetch_github_markdown(gh: Github, repo_name: str, path: str) -> Iterator[Doc
         console.print(f"[yellow]Warning: Cannot access {repo_name}/{path}: {e}[/yellow]")
         return
 
-    # Handle both files and directories
     if isinstance(contents, list):
         for item in contents:
             if item.type == "file" and item.name.endswith(".md"):
@@ -143,41 +152,47 @@ def fetch_github_markdown(gh: Github, repo_name: str, path: str) -> Iterator[Doc
                 source_url=item.html_url,
                 title=item.name.replace(".md", "").replace("-", " ").replace("_", " ").title(),
                 doc_type="github_markdown",
-                metadata={
-                    "repo": repo_name,
-                    "path": item.path,
-                    "sha": item.sha,
-                },
+                metadata={"repo": repo_name, "path": item.path, "sha": item.sha},
             )
         except Exception as e:
             console.print(f"[yellow]Warning: Could not decode {item.path}: {e}[/yellow]")
 
 
 def fetch_github_issues(gh: Github, repo_name: str, max_issues: int) -> Iterator[Document]:
-    """Fetch closed/answered GitHub issues (likely contain solutions)."""
+    """Fetch closed GitHub issues formatted as Q&A."""
     repo = gh.get_repo(repo_name)
     issues = repo.get_issues(state="closed", sort="updated", direction="desc")
 
     count = 0
     for issue in issues:
         if issue.pull_request:
-            continue  # skip PRs
+            continue
         if count >= max_issues:
             break
 
-        # Only include issues with at least one comment (likely answered)
-        if issue.comments == 0:
+        body = (issue.body or "").strip()
+        if len(body) < MIN_ISSUE_BODY_CHARS or issue.comments == 0:
             continue
 
-        body = issue.body or ""
+        labels = [lb.name for lb in issue.labels]
+
         comments_text = ""
         try:
-            for comment in issue.get_comments():
-                comments_text += f"\n\n**Comment by @{comment.user.login}:**\n{comment.body}"
+            for i, comment in enumerate(issue.get_comments()):
+                if i >= MAX_COMMENTS_PER_ISSUE:
+                    break
+                author = comment.user.login if comment.user else "unknown"
+                comments_text += f"\n\n**@{author}:**\n{comment.body or ''}"
         except GithubException:
             pass
 
-        content = f"# Issue: {issue.title}\n\n{body}{comments_text}"
+        label_str = ", ".join(labels) if labels else "none"
+        content = (
+            f"# {issue.title}\n\n"
+            f"**Labels:** {label_str}\n\n"
+            f"**Problem:**\n{body}\n\n"
+            f"**Discussion & Resolution:**{comments_text}"
+        )
 
         yield Document(
             content=content,
@@ -187,16 +202,16 @@ def fetch_github_issues(gh: Github, repo_name: str, max_issues: int) -> Iterator
             metadata={
                 "repo": repo_name,
                 "issue_number": issue.number,
-                "labels": [l.name for l in issue.labels],
+                "labels": labels,
                 "state": issue.state,
             },
         )
         count += 1
-        time.sleep(0.1)  # gentle rate limiting
+        time.sleep(0.1)
 
 
 def fetch_github_discussions(gh: Github, repo_name: str, max_discussions: int) -> Iterator[Document]:
-    """Fetch GitHub Discussions via GraphQL API."""
+    """Fetch GitHub Discussions via GraphQL."""
     if not GITHUB_TOKEN:
         console.print("[yellow]GITHUB_TOKEN not set — skipping Discussions[/yellow]")
         return
@@ -266,14 +281,10 @@ def fetch_github_discussions(gh: Github, repo_name: str, max_discussions: int) -
             cursor = page_info.get("endCursor")
 
 
-# ── Persistence ───────────────────────────────────────────────────────────────
-
 def save_document(doc: Document, output_dir: Path) -> Path:
-    """Save a document to disk as a JSONL entry."""
     type_dir = output_dir / doc.doc_type
     type_dir.mkdir(parents=True, exist_ok=True)
 
-    # Use a safe filename
     safe_title = "".join(c if c.isalnum() or c in "-_ " else "_" for c in doc.title)[:80]
     filepath = type_dir / f"{safe_title}.json"
 
@@ -293,8 +304,6 @@ def save_document(doc: Document, output_dir: Path) -> Path:
     return filepath
 
 
-# ── Main Entry ────────────────────────────────────────────────────────────────
-
 @click.command()
 @click.option("--output-dir", default=str(RAW_DATA_DIR), help="Directory to save raw documents")
 @click.option("--skip-rtd", is_flag=True, default=False, help="Skip ReadTheDocs scraping")
@@ -308,9 +317,8 @@ def main(output_dir: str, skip_rtd: bool, skip_github: bool, max_issues: int):
     console.rule("[bold blue]Chipathon Ingest Pipeline[/bold blue]")
     total_saved = 0
 
-    # ── 1. Scrape ReadTheDocs ──
     if not skip_rtd:
-        console.print("\n[cyan]📚 Scraping ReadTheDocs pages...[/cyan]")
+        console.print("\n[cyan]Scraping ReadTheDocs pages...[/cyan]")
         with httpx.Client(follow_redirects=True) as client:
             with Progress(SpinnerColumn(), TextColumn("{task.description}"), console=console) as progress:
                 task = progress.add_task("Scraping RTD...", total=len(RTD_PAGES))
@@ -322,13 +330,12 @@ def main(output_dir: str, skip_rtd: bool, skip_github: bool, max_issues: int):
                         total_saved += 1
                     progress.advance(task)
 
-    # ── 2. Fetch GitHub content ──
     if not skip_github:
         if GITHUB_TOKEN:
-            console.print(f"[green]✓ Using authenticated GitHub API (5000 req/hr)[/green]")
+            console.print(f"[green]Using authenticated GitHub API (5000 req/hr)[/green]")
             gh = Github(GITHUB_TOKEN)
         else:
-            console.print("[yellow]⚠️  No GITHUB_TOKEN — using unauthenticated API (60 req/hr). Set GITHUB_TOKEN in .env for faster fetching.[/yellow]")
+            console.print("[yellow]No GITHUB_TOKEN — using unauthenticated API (60 req/hr)[/yellow]")
             gh = Github()
 
         with Progress(
@@ -336,8 +343,7 @@ def main(output_dir: str, skip_rtd: bool, skip_github: bool, max_issues: int):
             BarColumn(), TaskProgressColumn(), console=console
         ) as progress:
 
-            # ORFS markdown files
-            console.print("\n[cyan]📦 Fetching ORFS markdown files...[/cyan]")
+            console.print("\n[cyan]Fetching ORFS markdown files...[/cyan]")
             for path in ORFS_MARKDOWN_PATHS:
                 task = progress.add_task(f"ORFS: {path}", total=None)
                 for doc in fetch_github_markdown(gh, SOURCES["orfs_repo"], path):
@@ -345,8 +351,7 @@ def main(output_dir: str, skip_rtd: bool, skip_github: bool, max_issues: int):
                     total_saved += 1
                 progress.remove_task(task)
 
-            # OpenROAD issues
-            console.print("\n[cyan]🐛 Fetching OpenROAD GitHub Issues...[/cyan]")
+            console.print("\n[cyan]Fetching OpenROAD GitHub Issues...[/cyan]")
             task = progress.add_task("Issues...", total=max_issues)
             for doc in fetch_github_issues(gh, SOURCES["openroad_repo"], max_issues):
                 save_document(doc, out_dir)
@@ -354,8 +359,7 @@ def main(output_dir: str, skip_rtd: bool, skip_github: bool, max_issues: int):
                 progress.advance(task)
             progress.remove_task(task)
 
-            # OpenROAD discussions
-            console.print("\n[cyan]💬 Fetching OpenROAD GitHub Discussions...[/cyan]")
+            console.print("\n[cyan]Fetching OpenROAD GitHub Discussions...[/cyan]")
             task = progress.add_task("Discussions...", total=MAX_DISCUSSIONS)
             for doc in fetch_github_discussions(gh, SOURCES["openroad_repo"], MAX_DISCUSSIONS):
                 save_document(doc, out_dir)
@@ -364,8 +368,8 @@ def main(output_dir: str, skip_rtd: bool, skip_github: bool, max_issues: int):
             progress.remove_task(task)
 
     console.rule()
-    console.print(f"[green]✅ Saved {total_saved} documents to {out_dir}[/green]")
-    console.print("\nNext step: [bold]python -m chatbot.ingest.chunker[/bold]")
+    console.print(f"[green]Saved {total_saved} documents to {out_dir}[/green]")
+    console.print("\nNext: [bold]python -m chatbot.ingest.chunker[/bold]")
 
 
 if __name__ == "__main__":
