@@ -1,0 +1,355 @@
+/* ── Chipathon Hub — Custom CSS ── */
+
+/* Brand colors */
+:root {
+  --chipathon-blue: #0f3c6e;
+  --chipathon-dark: #0d1117;
+  --chipathon-card-bg: rgba(255, 255, 255, 0.05);
+
+  /* Force Material Theme to use OpenROAD Dark Blue */
+  --md-primary-fg-color: #0f3c6e;
+  --md-primary-fg-color--light: #165293;
+  --md-primary-fg-color--dark: #082442;
+  --md-accent-fg-color: #0f3c6e;
+  --md-accent-fg-color--transparent: rgba(15, 60, 110, 0.1);
+}
+
+/* Slate (Dark) Scheme overrides for legibility */
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: #63b3ed; /* Light blue for legible links in dark mode */
+  --md-primary-fg-color--light: #90cdf4;
+  --md-primary-fg-color--dark: #3182ce;
+  --md-accent-fg-color: #63b3ed;
+  --md-accent-fg-color--transparent: rgba(99, 179, 237, 0.1);
+}
+
+/* Always force the top navigation header to OpenROAD Dark Navy */
+.md-header, .md-tabs {
+  background-color: #0f3c6e !important;
+}
+
+/* Hero banner on home page */
+.chipathon-hero {
+  background: linear-gradient(135deg, #1e5691 0%, #164273 100%);
+  padding: 1.5rem 1.5rem;
+  border-radius: 8px;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.chipathon-hero h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 0.5rem;
+}
+
+.chipathon-hero p {
+  font-size: 1.1rem;
+  opacity: 0.85;
+}
+
+/* Feature cards grid */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.2rem;
+  margin: 1.5rem 0;
+}
+
+.card {
+  background: var(--md-code-bg-color);
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 10px;
+  padding: 1.4rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(99, 179, 237, 0.15);
+  border-color: #63b3ed;
+  text-decoration: none;
+  color: inherit;
+}
+
+.card .card-icon {
+  font-size: 2rem;
+  margin-bottom: 0.6rem;
+}
+
+.card h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 0.4rem 0;
+}
+
+.card p {
+  font-size: 0.85rem;
+  opacity: 0.75;
+  margin: 0;
+}
+
+/* Chatbot badge */
+.chatbot-badge {
+  display: inline-block;
+  background: linear-gradient(90deg, #165293, #0f3c6e);
+  color: white;
+  padding: 0.3rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  margin-bottom: 1rem;
+}
+
+/* Code copy button enhancement */
+.md-clipboard {
+  transition: color 0.2s ease;
+}
+
+/* ── Floating Chatbot Widget ── */
+#chat-widget-button {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--md-primary-fg-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+  cursor: pointer;
+  z-index: 9999;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+#chat-widget-button:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+}
+
+#chat-widget-container {
+  display: none;
+  position: fixed;
+  bottom: 5.5rem;
+  right: 2rem;
+  width: 400px;
+  height: 580px;
+  max-height: 80vh;
+  background: var(--md-default-bg-color);
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 14px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+  z-index: 9999;
+  flex-direction: column;
+  overflow: hidden;
+}
+#chat-widget-container.open { display: flex; }
+
+.chat-widget-header {
+  background: var(--md-primary-fg-color);
+  color: white;
+  padding: 0.9rem 1.1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+#chat-widget-close {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 1.4rem;
+  cursor: pointer;
+  line-height: 1;
+  opacity: 0.8;
+}
+#chat-widget-close:hover { opacity: 1; }
+
+/* Message history */
+#chat-widget-history {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  scroll-behavior: smooth;
+}
+#chat-widget-history::-webkit-scrollbar { width: 4px; }
+#chat-widget-history::-webkit-scrollbar-thumb { background: var(--md-default-fg-color--lighter); border-radius: 4px; }
+
+/* Input area */
+.chat-widget-input-area {
+  display: flex;
+  padding: 0.7rem;
+  border-top: 1px solid var(--md-default-fg-color--lightest);
+  gap: 0.5rem;
+  background: var(--md-default-bg-color);
+  flex-shrink: 0;
+}
+#chat-widget-input {
+  flex: 1;
+  padding: 0.6rem 0.9rem;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 8px;
+  background: var(--md-default-bg-color);
+  color: var(--md-default-fg-color);
+  font-size: 0.875rem;
+  font-family: inherit;
+}
+#chat-widget-input:focus {
+  outline: none;
+  border-color: var(--md-primary-fg-color);
+}
+#chat-widget-send {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--md-primary-fg-color);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: filter 0.2s ease;
+}
+#chat-widget-send:hover { filter: brightness(1.15); }
+#chat-widget-send:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Messages */
+.message {
+  padding: 0.7rem 0.9rem;
+  border-radius: 12px;
+  max-width: 88%;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  word-break: break-word;
+}
+.user-message {
+  align-self: flex-end;
+  background: var(--md-primary-fg-color);
+  color: white;
+  border-bottom-right-radius: 3px;
+}
+.bot-message {
+  align-self: flex-start;
+  background: var(--md-code-bg-color);
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-bottom-left-radius: 3px;
+  max-width: 95%;
+}
+.error-message {
+  background: rgba(239, 83, 80, 0.08);
+  border-color: rgba(239, 83, 80, 0.3);
+  color: #ef5350;
+}
+
+/* Markdown content inside bot messages */
+.bot-message p { margin: 0 0 0.4rem 0; }
+.bot-message p:last-child { margin-bottom: 0; }
+.bot-message ul, .bot-message ol { margin: 0.3rem 0 0.4rem 1.2rem; padding: 0; }
+.bot-message li { margin-bottom: 0.2rem; }
+.bot-message code {
+  background: rgba(0,0,0,0.1);
+  border-radius: 4px;
+  padding: 0.1em 0.35em;
+  font-size: 0.82em;
+  font-family: var(--md-code-font);
+}
+.bot-message pre {
+  background: rgba(0,0,0,0.12);
+  border-radius: 6px;
+  padding: 0.7rem 0.9rem;
+  overflow-x: auto;
+  margin: 0.5rem 0;
+}
+.bot-message pre code {
+  background: none;
+  padding: 0;
+  font-size: 0.8em;
+  white-space: pre;
+}
+.bot-message strong { font-weight: 600; }
+.bot-message a { color: var(--md-primary-fg-color); text-decoration: underline; }
+
+/* Loading animation */
+.loading-message { padding: 0.8rem 1rem; }
+.loading-dots { display: flex; gap: 5px; align-items: center; height: 16px; }
+.loading-dots span {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--md-default-fg-color--light);
+  animation: dot-bounce 1.2s infinite ease-in-out;
+}
+.loading-dots span:nth-child(1) { animation-delay: 0s; }
+.loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+.loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes dot-bounce {
+  0%, 80%, 100% { transform: scale(0.7); opacity: 0.4; }
+  40% { transform: scale(1); opacity: 1; }
+}
+
+/* Citations */
+.citations-section {
+  margin-top: 0.8rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--md-default-fg-color--lightest);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.citations-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.5;
+  margin-bottom: 0.1rem;
+}
+.citation-link {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+  background: var(--md-default-bg-color);
+  border: 1px solid var(--md-default-fg-color--lightest);
+  text-decoration: none;
+  color: var(--md-default-fg-color);
+  font-size: 0.78rem;
+  line-height: 1.4;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+a.citation-link:hover {
+  border-color: var(--md-primary-fg-color);
+  background: var(--md-accent-fg-color--transparent);
+  color: var(--md-primary-fg-color);
+}
+.citation-num {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--md-primary-fg-color);
+  color: white;
+  font-size: 0.68rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.1rem;
+}
+.citation-body {
+  flex: 1;
+  opacity: 0.85;
+}
