@@ -5,13 +5,12 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import chromadb
-from google import genai
+from sentence_transformers import SentenceTransformer
 from dotenv import load_dotenv
 
 load_dotenv()
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-EMBED_MODEL = os.getenv("GEMINI_EMBED_MODEL", "gemini-embedding-001")
+EMBED_MODEL = os.getenv("EMBED_MODEL", "BAAI/bge-base-en-v1.5")
 CHROMA_PERSIST_DIR = Path(os.getenv("CHROMA_PERSIST_DIR", "data/vectorstore"))
 CHROMA_COLLECTION = os.getenv("CHROMA_COLLECTION_NAME", "chipathon_docs")
 TOP_K = int(os.getenv("TOP_K_RESULTS", "5"))
@@ -39,15 +38,11 @@ class RetrievedChunk:
 class ChipathonRetriever:
 
     def __init__(self):
-        if not GEMINI_API_KEY or GEMINI_API_KEY == "your_gemini_api_key_here":
-            raise ValueError(
-                "GEMINI_API_KEY not set. Copy .env.example to .env and set your key."
-            )
         self._init_clients()
 
     def _init_clients(self) -> None:
-        if not hasattr(self, "client"):
-            self.client = genai.Client(api_key=GEMINI_API_KEY)
+        if not hasattr(self, "_model"):
+            self._model = SentenceTransformer(EMBED_MODEL)
 
         client = chromadb.PersistentClient(path=str(CHROMA_PERSIST_DIR))
         self._collection = client.get_or_create_collection(
@@ -56,16 +51,9 @@ class ChipathonRetriever:
         )
 
     def _embed_query(self, query: str) -> list[float]:
-        try:
-            result = self.client.models.embed_content(
-                model=EMBED_MODEL,
-                contents=query,
-                config=genai.types.EmbedContentConfig(task_type="RETRIEVAL_QUERY")
-            )
-            return result.embeddings[0].values
-        except Exception as e:
-            print(f"Error embedding query: {e}")
-            return []
+        # BGE query prefix differs from document prefix
+        prefixed = f"Represent this sentence for searching relevant passages: {query}"
+        return self._model.encode(prefixed, normalize_embeddings=True).tolist()
 
     def retrieve(
         self,
@@ -79,7 +67,7 @@ class ChipathonRetriever:
         query_embedding = self._embed_query(query)
 
         if not query_embedding:
-            print("Warning: Query embedding failed (likely API quota limit). Returning no results.")
+            print("Warning: Query embedding returned empty. Returning no results.")
             return [], 0.0
 
         where_filter = {"doc_type": doc_type_filter} if doc_type_filter else None

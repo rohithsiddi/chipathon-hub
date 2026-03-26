@@ -1,9 +1,10 @@
 """
 Fetches content from OpenROAD sources:
-  1. OpenROAD ReadTheDocs pages
+  1. OpenROAD + ORFS ReadTheDocs pages (full crawl, not just seed pages)
   2. ORFS GitHub repo markdown files
-  3. OpenROAD GitHub Issues (closed, with comments)
-  4. OpenROAD GitHub Discussions
+  3. OpenROAD main repo markdown files (including per-tool src/ READMEs)
+  4. GitHub Issues from both repos (closed, with comments)
+  5. GitHub Discussions from both repos
 
 Run: python -m chatbot.ingest.scraper
 """
@@ -22,7 +23,7 @@ import click
 import httpx
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
-from github import Github, GithubException
+from github import Auth, Github, GithubException
 from markdownify import markdownify
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskProgressColumn
@@ -42,10 +43,11 @@ SOURCES = {
     "openroad_repo": "The-OpenROAD-Project/OpenROAD",
 }
 
+# RTD pages to scrape — verified working URLs only.
+# Tool-level content (placement, routing, CTS, etc.) comes from GitHub src/ markdown below.
 RTD_PAGES = [
     "https://openroad.readthedocs.io/en/latest/",
     "https://openroad.readthedocs.io/en/latest/user/FAQS.html",
-    "https://openroad.readthedocs.io/en/latest/user/MessagesFunctions.html",
     "https://openroad-flow-scripts.readthedocs.io/en/latest/",
     "https://openroad-flow-scripts.readthedocs.io/en/latest/user/BuildLocally.html",
     "https://openroad-flow-scripts.readthedocs.io/en/latest/tutorials/FlowTutorial.html",
@@ -53,13 +55,19 @@ RTD_PAGES = [
 
 ORFS_MARKDOWN_PATHS = [
     "README.md",
-    "flow/README.md",
     "flow/tutorials/",
     "docs/",
 ]
 
-MAX_ISSUES = 100
-MAX_DISCUSSIONS = 50
+# Tool-level READMEs and main docs for the core OpenROAD repo
+OPENROAD_MARKDOWN_PATHS = [
+    "README.md",
+    "docs/",
+    "src/",
+]
+
+MAX_ISSUES = 150
+MAX_DISCUSSIONS = 75
 MAX_COMMENTS_PER_ISSUE = 10
 MIN_ISSUE_BODY_CHARS = 50
 
@@ -82,6 +90,7 @@ def clean_markdown(text: str) -> str:
     text = re.sub(r'\[\]\([^)]*\)', '', text)
     text = re.sub(r'\n\s*\[(?:next|previous|index|contents)\][^\n]*', '', text, flags=re.IGNORECASE)
     return text.strip()
+
 
 
 def scrape_rtd_page(url: str, client: httpx.Client) -> Document | None:
@@ -318,12 +327,12 @@ def main(output_dir: str, skip_rtd: bool, skip_github: bool, max_issues: int):
     total_saved = 0
 
     if not skip_rtd:
-        console.print("\n[cyan]Scraping ReadTheDocs pages...[/cyan]")
+        console.print(f"\n[cyan]Scraping {len(RTD_PAGES)} ReadTheDocs pages...[/cyan]")
         with httpx.Client(follow_redirects=True) as client:
             with Progress(SpinnerColumn(), TextColumn("{task.description}"), console=console) as progress:
                 task = progress.add_task("Scraping RTD...", total=len(RTD_PAGES))
                 for url in RTD_PAGES:
-                    progress.update(task, description=f"Scraping: {url[-50:]}")
+                    progress.update(task, description=f"Scraping: {url[-60:]}")
                     doc = scrape_rtd_page(url, client)
                     if doc:
                         save_document(doc, out_dir)
@@ -333,7 +342,7 @@ def main(output_dir: str, skip_rtd: bool, skip_github: bool, max_issues: int):
     if not skip_github:
         if GITHUB_TOKEN:
             console.print(f"[green]Using authenticated GitHub API (5000 req/hr)[/green]")
-            gh = Github(GITHUB_TOKEN)
+            gh = Github(auth=Auth.Token(GITHUB_TOKEN))
         else:
             console.print("[yellow]No GITHUB_TOKEN — using unauthenticated API (60 req/hr)[/yellow]")
             gh = Github()
@@ -351,21 +360,33 @@ def main(output_dir: str, skip_rtd: bool, skip_github: bool, max_issues: int):
                     total_saved += 1
                 progress.remove_task(task)
 
-            console.print("\n[cyan]Fetching OpenROAD GitHub Issues...[/cyan]")
-            task = progress.add_task("Issues...", total=max_issues)
-            for doc in fetch_github_issues(gh, SOURCES["openroad_repo"], max_issues):
-                save_document(doc, out_dir)
-                total_saved += 1
-                progress.advance(task)
-            progress.remove_task(task)
+            console.print("\n[cyan]Fetching OpenROAD main repo markdown files...[/cyan]")
+            for path in OPENROAD_MARKDOWN_PATHS:
+                task = progress.add_task(f"OpenROAD: {path}", total=None)
+                for doc in fetch_github_markdown(gh, SOURCES["openroad_repo"], path):
+                    save_document(doc, out_dir)
+                    total_saved += 1
+                progress.remove_task(task)
 
-            console.print("\n[cyan]Fetching OpenROAD GitHub Discussions...[/cyan]")
-            task = progress.add_task("Discussions...", total=MAX_DISCUSSIONS)
-            for doc in fetch_github_discussions(gh, SOURCES["openroad_repo"], MAX_DISCUSSIONS):
-                save_document(doc, out_dir)
-                total_saved += 1
-                progress.advance(task)
-            progress.remove_task(task)
+            console.print("\n[cyan]Fetching GitHub Issues (both repos)...[/cyan]")
+            for repo_key in ("openroad_repo", "orfs_repo"):
+                repo_name = SOURCES[repo_key]
+                task = progress.add_task(f"Issues: {repo_name}...", total=max_issues)
+                for doc in fetch_github_issues(gh, repo_name, max_issues):
+                    save_document(doc, out_dir)
+                    total_saved += 1
+                    progress.advance(task)
+                progress.remove_task(task)
+
+            console.print("\n[cyan]Fetching GitHub Discussions (both repos)...[/cyan]")
+            for repo_key in ("openroad_repo", "orfs_repo"):
+                repo_name = SOURCES[repo_key]
+                task = progress.add_task(f"Discussions: {repo_name}...", total=MAX_DISCUSSIONS)
+                for doc in fetch_github_discussions(gh, repo_name, MAX_DISCUSSIONS):
+                    save_document(doc, out_dir)
+                    total_saved += 1
+                    progress.advance(task)
+                progress.remove_task(task)
 
     console.rule()
     console.print(f"[green]Saved {total_saved} documents to {out_dir}[/green]")

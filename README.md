@@ -1,126 +1,126 @@
-# Chipathon Knowledge Hub + Ask Chipathon Chatbot
+# Chipathon Knowledge Hub + Ask Chipathon
 
-> A GSoC 2026 PoC — centralized documentation hub and Gemini-powered RAG chatbot for IEEE SSCS Chipathon participants using OpenROAD-based flows.
+A GSoC 2026 proof-of-concept for IEEE SSCS Chipathon — a documentation hub paired with a RAG chatbot that answers questions about OpenROAD-based RTL-to-GDSII flows.
 
----
-
-## 🗂️ Project Structure
-
-```
-chipathon-hub/
-├── hub/                    ← MkDocs Material knowledge site
-│   ├── docs/               ← Markdown documentation pages
-│   └── mkdocs.yml          ← Site configuration
-│
-├── chatbot/                ← Ask Chipathon RAG chatbot
-│   ├── ingest/             ← Scraper → chunker → embedder pipeline
-│   ├── retriever.py        ← ChromaDB similarity search
-│   ├── rag_chain.py        ← LangGraph RAG with fallback logic
-│   ├── cli.py              ← ask-chipathon CLI
-│   └── eval/               ← Evaluation harness
-│
-├── data/                   ← Local data (gitignored)
-│   ├── raw/                ← Fetched docs/issues
-│   ├── processed/          ← Chunked text with metadata
-│   └── vectorstore/        ← ChromaDB persistent store
-│
-└── .github/workflows/      ← Auto-rebuild index on doc changes
-```
+Live demos: [Knowledge Hub](https://rohithsiddi.github.io/chipathon-hub/) · [API on HF Spaces](https://huggingface.co/spaces/rohithsiddi/chipathon-api)
 
 ---
 
-## 🚀 Quick Start
+## What this is
 
-### 1. Setup (uv)
+Chipathon participants often get stuck on the same problems — DRC errors, timing failures, flow configuration — and end up digging through scattered docs, GitHub issues, and Discord threads to find answers. This project centralizes that knowledge and makes it searchable through a chatbot.
 
-```bash
-# Install uv if you haven't already
-curl -LsSf https://astral.sh/uv/install.sh | sh
+The chatbot retrieves relevant content from OpenROAD documentation, GitHub issues, and community discussions, then generates grounded answers with source citations. If it can't find a reliable answer, it falls back to a structured triage response with suggestions for getting help from mentors.
 
-# Create virtual environment and install deps
-uv venv
-source .venv/bin/activate      # macOS/Linux
-# .venv\Scripts\activate       # Windows
+## Project layout
 
-uv pip install -e .
+```
+├── hub/                    # MkDocs Material knowledge site
+│   ├── docs/               # Markdown pages
+│   └── mkdocs.yml
+│
+├── chatbot/
+│   ├── ingest/             # scraper → chunker → embedder pipeline
+│   ├── retriever.py        # ChromaDB vector search
+│   ├── rag_chain.py        # LangGraph RAG with confidence-based routing
+│   ├── cli.py              # ask-chipathon CLI
+│   └── eval/               # evaluation harness
+│
+├── data/
+│   ├── raw/                # fetched documents (gitignored)
+│   ├── processed/          # chunked text with metadata (gitignored)
+│   └── vectorstore/        # ChromaDB persistent store (committed)
+│
+└── .github/workflows/      # CI: rebuild index weekly, deploy hub + API
 ```
 
-### 2. Configure
+## Setup
 
 ```bash
-cp .env.example .env
-# Edit .env and set your GEMINI_API_KEY and GITHUB_TOKEN
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -e .
 ```
 
-### 3. Ingest Documents
+Copy `.env.example` to `.env` and set:
+- `OPENAI_API_KEY` — for answer generation (gpt-4o-mini)
+- `GITHUB_TOKEN` — for fetching issues and discussions (optional but recommended)
+- `HF_TOKEN` — only needed for CI deployment
 
+## Running locally
+
+**Build the knowledge base** (scrape docs, chunk, embed):
 ```bash
-# Fetch OpenROAD docs + GitHub issues → embed into ChromaDB
-chipathon-ingest
+python -m chatbot.ingest.scraper
+python -m chatbot.ingest.chunker
+python -m chatbot.ingest.embedder
 ```
 
-### 4. Ask Questions
-
+**Ask questions:**
 ```bash
-ask-chipathon "How do I fix DRC errors in OpenROAD?"
+ask-chipathon "How do I fix setup timing violations?"
 ask-chipathon "What does the floorplan stage produce?"
-ask-chipathon "How do I interpret timing reports?"
+ask-chipathon "How do I interpret a timing report?"
 ```
 
-### 5. Run the Knowledge Hub locally
-
+**Run the knowledge hub locally:**
 ```bash
-cd hub
-mkdocs serve
-# Open http://127.0.0.1:8000
+cd hub && mkdocs serve
 ```
 
-### 6. Run the Eval Harness
-
+**Run the eval harness:**
 ```bash
-python chatbot/eval/eval_harness.py
+python -m chatbot.eval.eval_harness
 ```
 
----
+## Architecture
 
-## 🤖 Chatbot Architecture
+The RAG pipeline uses a LangGraph state machine with confidence-based routing:
 
 ```
-Query → ChromaDB Retriever → Confidence Check
-                                    ↓              ↓
-                             [High confidence]  [Low confidence]
-                             Gemini 1.5 Pro     Triage fallback
-                             answer + citations  + log request
+Query
+  → BGE embeddings (local, BAAI/bge-base-en-v1.5)
+  → ChromaDB cosine similarity search
+  → confidence score
+      ≥ 0.45  →  GPT-4o-mini generates answer with citations
+      < 0.45  →  structured fallback with triage guidance
 ```
 
-**Key design decisions:**
-- **Gemini** (`gemini-1.5-pro`) for generation, `text-embedding-004` for embeddings
-- **LangGraph** state machine for structured RAG flow with proper fallback
-- **ChromaDB** for persistent, metadata-filtered vector search
-- **Section-level citations** — every answer cites the exact doc section
+Key choices:
+- **BGE embeddings** run locally — no API calls, no rate limits, no cost
+- **GPT-4o-mini** for generation — fast and cheap enough for a prototype
+- **LangGraph** for the RAG flow so routing logic is explicit and testable
+- **ChromaDB** with cosine similarity, persistent to disk so it can be bundled in Docker
 
----
+## Data sources
 
-## 📚 Data Sources
+The knowledge base pulls from:
 
-| Source | Content | Method |
-|--------|---------|--------|
-| [OpenROAD Docs](https://openroad.readthedocs.io) | Official tool docs, FAQs | Web scrape |
-| [ORFS GitHub](https://github.com/The-OpenROAD-Project/OpenROAD-flow-scripts) | Flow scripts, READMEs | GitHub API |
-| [OpenROAD Issues](https://github.com/The-OpenROAD-Project/OpenROAD/issues) | Real debugging Q&A | GitHub API |
-| [OpenROAD Discussions](https://github.com/The-OpenROAD-Project/OpenROAD/discussions) | Community answers | GitHub API |
+| Source | What we get |
+|--------|-------------|
+| OpenROAD ReadTheDocs | Official docs, FAQs |
+| ORFS ReadTheDocs | Flow tutorial, build guides |
+| OpenROAD GitHub markdown (`src/`, `docs/`) | Per-tool READMEs (placement, routing, CTS, STA, PDN…) |
+| ORFS GitHub markdown (`docs/`) | Flow variables, adding new designs, platform guides |
+| OpenROAD GitHub Issues (closed) | Real debugging Q&A with resolutions |
+| ORFS GitHub Issues (closed) | Flow-specific debugging cases |
+| OpenROAD GitHub Discussions | Community answers |
+| ORFS GitHub Discussions | Community answers |
 
----
+The index rebuilds automatically every Sunday via GitHub Actions.
 
-## 🧪 Evaluation
+## Evaluation
 
-The eval harness tests 30 Chipathon-style questions against:
-- **Citation coverage** — does every answer cite a real source?
-- **Groundedness** — is the answer supported by retrieved context?
-- **No-answer correctness** — does the bot correctly say "I don't know" when evidence is missing?
+The eval harness runs a set of Chipathon-style questions and measures:
+- **Citation coverage** — does every answer cite a source?
+- **Groundedness** — is the answer actually supported by the retrieved context?
+- **No-answer correctness** — does the bot fall back appropriately when it shouldn't answer?
+- **Average retrieval confidence** — how similar are retrieved chunks to the query?
 
----
+## Deployment
 
-## 📄 License
+The knowledge hub deploys to GitHub Pages via `deploy-hub.yml`. The API backend deploys as a Docker container to Hugging Face Spaces via `deploy-api.yml`. Both trigger automatically on push to `main`.
 
-Apache 2.0 — consistent with the OpenROAD project.
+## License
+
+Apache 2.0, consistent with the OpenROAD project.

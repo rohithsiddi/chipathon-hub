@@ -11,12 +11,11 @@ dependencies = [
     "mkdocs-material-extensions>=1.3.0",
     "pymdown-extensions>=10.7",
 
-    # Google Gemini (used for embeddings only)
-    "google-generativeai>=0.8.0",
-    "langchain-google-genai>=2.0.0",
-
     # OpenAI (used for generation)
     "openai>=1.30.0",
+
+    # Local embeddings — no API key or rate limits needed
+    "sentence-transformers>=3.0.0",
 
     # LangChain + LangGraph RAG
     "langchain>=0.3.0",

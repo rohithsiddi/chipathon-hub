@@ -1,5 +1,5 @@
 """
-Reads chunks.jsonl from chunker.py, generates Gemini embeddings,
+Reads chunks.jsonl from chunker.py, generates BGE embeddings locally,
 and stores them in a persistent ChromaDB collection.
 
 Run: python -m chatbot.ingest.embedder
@@ -10,12 +10,11 @@ from __future__ import annotations
 import hashlib
 import json
 import os
-import time
 from pathlib import Path
 
 import chromadb
 import click
-from google import genai
+from sentence_transformers import SentenceTransformer
 from dotenv import load_dotenv
 from rich.console import Console
 from rich.progress import track
@@ -24,14 +23,12 @@ load_dotenv()
 
 console = Console()
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-EMBED_MODEL = os.getenv("GEMINI_EMBED_MODEL", "gemini-embedding-001")
+EMBED_MODEL = os.getenv("EMBED_MODEL", "BAAI/bge-base-en-v1.5")
 CHROMA_PERSIST_DIR = Path(os.getenv("CHROMA_PERSIST_DIR", "data/vectorstore"))
 CHROMA_COLLECTION = os.getenv("CHROMA_COLLECTION_NAME", "chipathon_docs")
 CHUNKS_FILE = Path("data/processed/chunks.jsonl")
 
-BATCH_SIZE = 50
-REQUEST_DELAY_S = 4.0
+BATCH_SIZE = 64
 
 
 def make_chunk_id(source_url: str, chunk_index: int, text: str) -> str:
@@ -40,14 +37,10 @@ def make_chunk_id(source_url: str, chunk_index: int, text: str) -> str:
     return hashlib.md5(key.encode()).hexdigest()
 
 
-def get_gemini_embeddings(texts: list[str]) -> list[list[float]]:
-    client = genai.Client(api_key=GEMINI_API_KEY)
-    result = client.models.embed_content(
-        model=EMBED_MODEL,
-        contents=texts,
-        config=genai.types.EmbedContentConfig(task_type="RETRIEVAL_DOCUMENT")
-    )
-    return [e.values for e in result.embeddings]
+def get_embeddings(model: SentenceTransformer, texts: list[str]) -> list[list[float]]:
+    # BGE models work best with this prompt prefix for documents
+    prefixed = [f"Represent this sentence for searching relevant passages: {t}" for t in texts]
+    return model.encode(prefixed, normalize_embeddings=True).tolist()
 
 
 @click.command()
@@ -64,11 +57,9 @@ def main(chunks_file: str, persist_dir: str, collection: str, reset: bool):
         console.print(f"[red]Chunks file not found: {chunks_path}. Run chunker first.[/red]")
         return
 
-    if not GEMINI_API_KEY or GEMINI_API_KEY == "your_gemini_api_key_here":
-        console.print("[red]GEMINI_API_KEY not set in .env — cannot generate embeddings.[/red]")
-        return
-
     console.rule("[bold blue]Chipathon Embedder[/bold blue]")
+    console.print(f"[cyan]Loading model {EMBED_MODEL}...[/cyan]")
+    model = SentenceTransformer(EMBED_MODEL)
 
     persist_path.mkdir(parents=True, exist_ok=True)
     chroma_client = chromadb.PersistentClient(path=str(persist_path))
@@ -116,22 +107,7 @@ def main(chunks_file: str, persist_dir: str, collection: str, reset: bool):
         batch_chunks = [p[1] for p in batch_pairs]
         texts = [c["text"] for c in batch_chunks]
 
-        max_retries = 3
-        for attempt in range(max_retries):
-            try:
-                embeddings = get_gemini_embeddings(texts)
-                break
-            except Exception as e:
-                err_msg = str(e)
-                if "429" in err_msg or "RESOURCE_EXHAUSTED" in err_msg:
-                    console.print(f"[yellow]Rate limit hit. Waiting 65s (attempt {attempt + 1}/{max_retries})...[/yellow]")
-                    time.sleep(65)
-                else:
-                    console.print(f"[yellow]Embedding failed: {err_msg}. Retrying in 5s...[/yellow]")
-                    time.sleep(5)
-        else:
-            console.print("[red]Max retries exceeded. Skipping batch.[/red]")
-            continue
+        embeddings = get_embeddings(model, texts)
 
         metadatas = []
         for c in batch_chunks:
@@ -153,8 +129,6 @@ def main(chunks_file: str, persist_dir: str, collection: str, reset: bool):
             documents=texts,
             metadatas=metadatas,
         )
-
-        time.sleep(REQUEST_DELAY_S)
 
     console.rule()
     console.print(f"[green]ChromaDB collection '{collection}' has {col.count()} vectors[/green]")

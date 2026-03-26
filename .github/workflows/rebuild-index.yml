@@ -52,8 +52,6 @@ jobs:
         run: python -m chatbot.ingest.chunker
 
       - name: Embed and index
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
           RESET_FLAG=""
           if [ "${{ github.event.inputs.reset_index }}" = "true" ]; then
@@ -61,12 +59,13 @@ jobs:
           fi
           python -m chatbot.ingest.embedder $RESET_FLAG
 
-      - name: Upload vectorstore artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: chipathon-vectorstore-${{ github.sha }}
-          path: data/vectorstore/
-          retention-days: 90
+      - name: Commit updated vectorstore
+        run: |
+          git config user.email "action@github.com"
+          git config user.name "GitHub Action"
+          git add data/vectorstore/
+          git diff --cached --quiet || git commit -m "chore: rebuild knowledge base index [skip ci]"
+          git push
 
       - name: Job summary
         run: |
