@@ -18,6 +18,7 @@ CONFIDENCE_THRESHOLD = float(os.getenv("RETRIEVAL_CONFIDENCE_THRESHOLD", "0.45")
 
 class RAGState(TypedDict):
     query: str
+    intent: str  # "answerable" | "code_gen" | "off_topic" | "meta"
     chunks: list[RetrievedChunk]
     confidence: float
     answer: str
@@ -25,6 +26,14 @@ class RAGState(TypedDict):
     is_fallback: bool
     related_topics: list[str]
 
+
+INTENT_SYSTEM_PROMPT = """Classify the user query into exactly one category:
+- answerable: a question about OpenROAD, ORFS, chip design, EDA flows, PDKs, timing, or the Chipathon
+- code_gen: a request to write, generate, implement, or create code, scripts, or design files
+- off_topic: unrelated to chip design or EDA (cooking, sports, general software, etc.)
+- meta: a question about this chatbot (what it does, who made it, capabilities)
+
+Reply with only the category name, nothing else."""
 
 SYSTEM_PROMPT = """You are Ask Chipathon — an expert assistant for IEEE SSCS Chipathon participants
 using OpenROAD-based EDA flows to go from RTL to GDSII.
@@ -79,6 +88,28 @@ If category B or C — respond with:
 **→ Related topics to search:**
 [2-3 relevant EDA terms]
 """
+
+
+def classify_intent_node(state: RAGState) -> RAGState:
+    client = OpenAI(api_key=OPENAI_API_KEY)
+    response = client.chat.completions.create(
+        model=CHAT_MODEL,
+        messages=[
+            {"role": "system", "content": INTENT_SYSTEM_PROMPT},
+            {"role": "user", "content": state["query"]},
+        ],
+        max_tokens=10,
+        temperature=0,
+    )
+    raw = response.choices[0].message.content.strip().lower()
+    intent = raw if raw in ("answerable", "code_gen", "off_topic", "meta") else "answerable"
+    return {**state, "intent": intent}
+
+
+def intent_router(state: RAGState) -> str:
+    if state["intent"] == "answerable":
+        return "retrieve"
+    return "fallback"
 
 
 def retrieve_node(state: RAGState) -> RAGState:
@@ -146,11 +177,17 @@ def fallback_node(state: RAGState) -> RAGState:
 def build_rag_graph() -> StateGraph:
     graph = StateGraph(RAGState)
 
+    graph.add_node("classify", classify_intent_node)
     graph.add_node("retrieve", retrieve_node)
     graph.add_node("generate", generate_node)
     graph.add_node("fallback", fallback_node)
 
-    graph.set_entry_point("retrieve")
+    graph.set_entry_point("classify")
+    graph.add_conditional_edges(
+        "classify",
+        intent_router,
+        {"retrieve": "retrieve", "fallback": "fallback"},
+    )
     graph.add_conditional_edges(
         "retrieve",
         confidence_router,
@@ -172,6 +209,7 @@ def ask(query: str) -> RAGState:
 
     initial_state: RAGState = {
         "query": query,
+        "intent": "",
         "chunks": [],
         "confidence": 0.0,
         "answer": "",

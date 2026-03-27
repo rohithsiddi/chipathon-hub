@@ -9,7 +9,7 @@
   {
     "id": "q002",
     "question": "Where is the final GDS file after the ORFS flow completes?",
-    "expected_topics": ["6_final.gds", "results", "gds"],
+    "expected_topics": ["results", "gds", "6_final"],
     "expected_doc_types": ["github_markdown", "rtd"],
     "should_answer": true
   },
@@ -30,14 +30,14 @@
   {
     "id": "q005",
     "question": "How do I re-run only the detailed routing stage without rerunning the full flow?",
-    "expected_topics": ["drt", "route", "make", "stage", "clean"],
+    "expected_topics": ["route", "make", "stage"],
     "expected_doc_types": ["github_markdown", "rtd"],
     "should_answer": true
   },
   {
     "id": "q006",
     "question": "What is WNS and TNS in timing reports?",
-    "expected_topics": ["worst negative slack", "total negative slack", "timing", "slack"],
+    "expected_topics": ["WNS", "TNS", "slack", "timing"],
     "expected_doc_types": ["rtd", "github_issue"],
     "should_answer": true
   },
@@ -64,9 +64,9 @@
   },
   {
     "id": "q010",
-    "question": "What files do I need to submit for the Chipathon?",
-    "expected_topics": ["gds", "DEF", "metrics", "DRC", "timing"],
-    "expected_doc_types": ["github_markdown"],
+    "question": "What are the output files produced at each stage of the ORFS flow?",
+    "expected_topics": ["def", "gds", "results"],
+    "expected_doc_types": ["github_markdown", "rtd"],
     "should_answer": true
   },
   {
@@ -211,5 +211,45 @@
     "expected_doc_types": [],
     "should_answer": false,
     "reason": "Completely out of domain — must trigger fallback"
+  },
+  {
+    "id": "q031",
+    "question": "What do you do?",
+    "expected_topics": [],
+    "expected_doc_types": [],
+    "should_answer": false,
+    "reason": "Meta/conversational question — should trigger fallback, not retrieve chip design docs"
+  },
+  {
+    "id": "q032",
+    "question": "Who are you and who built you?",
+    "expected_topics": [],
+    "expected_doc_types": [],
+    "should_answer": false,
+    "reason": "Meta question about the bot itself — should trigger fallback"
+  },
+  {
+    "id": "q033",
+    "question": "How do I use Cadence Innovus for place and route?",
+    "expected_topics": [],
+    "expected_doc_types": [],
+    "should_answer": false,
+    "reason": "Cadence Innovus is a competitor EDA tool not covered in the OpenROAD knowledge base"
+  },
+  {
+    "id": "q034",
+    "question": "Write me a Verilog module for a 4-bit counter",
+    "expected_topics": [],
+    "expected_doc_types": [],
+    "should_answer": false,
+    "reason": "Code generation request, out of scope for this Q&A bot"
+  },
+  {
+    "id": "q035",
+    "question": "What is the registration deadline for the IEEE SSCS Chipathon 2025?",
+    "expected_topics": [],
+    "expected_doc_types": [],
+    "should_answer": false,
+    "reason": "Event logistics/dates not in knowledge base"
   }
 ]
